@@ -7,7 +7,11 @@
   "regions": ["iad1"],
   "env": {
     "NEXT_PUBLIC_APP_NAME": "Can't Decide GPT",
+    "NEXT_PUBLIC_APP_URL": "https://cantdecidegpt.vercel.app",
     "NEXT_PUBLIC_SUPABASE_URL": "https://jadpptdyoblbgkkrqjhh.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key"
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphZHBwdGR5b2JsYmdra3JxamhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxNDQ3MTEsImV4cCI6MjEwNDcyMDcxMX0.n0bjY3g40L8hEGxtvCWmws3-L6mJr9PBcY2XYrRSF5Y",
+    "PAYPAL_CLIENT_ID": "BAAvvQhkpCPQzLi5nMW3sBSBUFY2O-FxgWXHO8UH65lIaaqsd8Jk1QLO5cu_nOg-_VSe9hOxhecfboPu5o",
+    "PAYPAL_CLIENT_SECRET": "EN22L776DNpnH7pamkqAQK33EfhWRi3TZ2e5Ye10XIq3Gk0ekpLkZOJkG8s92kW_xd-6zgYXN7mdW315",
+    "PAYPAL_API_BASE": "https://api-m.paypal.com"
   }
 }
