@@ -13,6 +13,67 @@ export function supabaseConfigured(): boolean {
   return Boolean(URL && (SERVICE || ANON));
 }
 
+export function supabaseAuthEnabled(): boolean {
+  return Boolean(URL && ANON);
+}
+
+export interface SupabaseIdentity {
+  id: string;
+  email: string;
+  name: string;
+}
+
+// Authenticate against Supabase Auth with the anon key (works on serverless).
+// Returns null when the credentials are rejected or auth is not configured.
+export async function supabaseSignIn(email: string, password: string): Promise<SupabaseIdentity | null> {
+  if (!supabaseAuthEnabled()) return null;
+  try {
+    const { data, error } = await publicClient().auth.signInWithPassword({ email, password });
+    if (error || !data.user) return null;
+    const name = (data.user.user_metadata?.name as string) ?? data.user.email?.split('@')[0] ?? 'User';
+    return { id: data.user.id, email: data.user.email ?? email, name };
+  } catch {
+    return null;
+  }
+}
+
+// Register a new email/password identity in Supabase Auth.
+export async function supabaseSignUp(email: string, password: string, name: string): Promise<{ identity: SupabaseIdentity | null; needsVerification: boolean; error: string | null }> {
+  if (!supabaseAuthEnabled()) return { identity: null, needsVerification: false, error: 'Supabase auth is not configured.' };
+  try {
+    const { data, error } = await publicClient().auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    });
+    if (error) return { identity: null, needsVerification: false, error: error.message };
+    if (data.session && data.user) {
+      return { identity: { id: data.user.id, email: data.user.email ?? email, name }, needsVerification: false, error: null };
+    }
+    return { identity: null, needsVerification: true, error: null };
+  } catch {
+    return { identity: null, needsVerification: false, error: 'Could not reach the auth service.' };
+  }
+}
+
+// Provision a Supabase identity for an existing local/seed account (email_confirm: true).
+// Used so demo and pre-existing accounts keep working through cloud auth.
+export async function supabaseAdminCreateUser(email: string, password: string, name: string): Promise<SupabaseIdentity | null> {
+  if (!supabaseAuthEnabled() || !SERVICE) return null;
+  try {
+    const { data, error } = await adminClient().auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { name },
+    });
+    if (error || !data.user) return null;
+    return { id: data.user.id, email: data.user.email ?? email, name };
+  } catch {
+    return null;
+  }
+}
+
 let client: SupabaseClient | null = null;
 
 export function adminClient(): SupabaseClient {

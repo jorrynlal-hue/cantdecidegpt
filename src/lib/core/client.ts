@@ -33,6 +33,8 @@ export interface Me {
 
 export const auth = {
   login: (email: string, password: string) => request<Me>('/api/auth/me', 'POST', { email, password }),
+  signup: (email: string, password: string, name: string) =>
+    request<Me & { needsVerification?: boolean }>('/api/auth/signup', 'POST', { email, password, name }),
   logout: () => request<{ signedOut: boolean }>('/api/auth/me', 'DELETE'),
   me: () => request<Me>('/api/auth/me', 'GET'),
   switchWorkspace: (workspaceId: string) => request<{ activeWorkspaceId: string }>('/api/workspaces/switch', 'POST', { workspaceId }),

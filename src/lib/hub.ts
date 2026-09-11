@@ -15,14 +15,12 @@ export interface HubTool {
 // The 24 tools in orbital order, starting from upper-left (Reports region):
 export const HUB_TOOLS: HubTool[] = [
   { id: 'attribution', name: 'Attribution', href: '/dashboard/attribution', icon: 'Waypoints', clock: 10.75, layer: 'outer', premium: true, blurb: 'Source tracking and attribution intelligence across every generated asset.' },
-  { id: 'ai-worker', name: 'AI Worker', href: '/dashboard/ai-worker', icon: 'Cpu', clock: 11.25, layer: 'inner', premium: true, blurb: 'Autonomous execution agent that runs workflows on your behalf.' },
   { id: 'executive', name: 'Executive', href: '/dashboard/executive', icon: 'Gauge', clock: 12, layer: 'outer', premium: true, blurb: 'Executive intelligence, decision support and high-level business overview.' },
   { id: 'admin', name: 'Admin', href: '/dashboard/admin', icon: 'ShieldCheck', clock: 1, layer: 'inner', premium: false, blurb: 'System administration and governance controls.' },
   { id: 'security', name: 'Security', href: '/dashboard/security', icon: 'KeyRound', clock: 1.5, layer: 'outer', premium: false, blurb: 'Access controls, permissions and audit integrity.' },
   { id: 'settings', name: 'Settings', href: '/dashboard/settings', icon: 'Settings', clock: 2, layer: 'inner', premium: false, blurb: 'Workspace, AI provider and appearance configuration.' },
   { id: 'team', name: 'Team', href: '/dashboard/team', icon: 'Users', clock: 2.5, layer: 'outer', premium: true, blurb: 'Members, roles and collaboration across the workspace.' },
   { id: 'ai', name: 'AI', href: '/dashboard/ai', icon: 'BrainCircuit', clock: 3, layer: 'inner', premium: true, blurb: 'AI assistant, content generation and the full intelligence suite.' },
-  { id: 'tasks', name: 'Tasks', href: '/dashboard/tasks', icon: 'ListChecks', clock: 3.5, layer: 'outer', premium: false, blurb: 'Task management: create, prioritize, track and complete work.' },
   { id: 'insights', name: 'Insights', href: '/dashboard/insights', icon: 'Activity', clock: 4, layer: 'inner', premium: false, blurb: 'Intelligence analytics, derived notes and system observations.' },
   { id: 'automation', name: 'Automation', href: '/dashboard/automation', icon: 'Workflow', clock: 4.5, layer: 'outer', premium: true, blurb: 'Workflow builder and autonomous execution engine.' },
   { id: 'integrations', name: 'Integrations', href: '/dashboard/integrations', icon: 'Globe2', clock: 5, layer: 'inner', premium: false, blurb: 'Connectors and delivery relays to external services.' },
@@ -34,13 +32,11 @@ export const HUB_TOOLS: HubTool[] = [
   { id: 'connect', name: 'Connect', href: '/dashboard/connect', icon: 'Link', clock: 7.5, layer: 'inner', premium: true, blurb: 'Unified communication layer: mail, notifications and conversation.' },
   { id: 'hr', name: 'HR', href: '/dashboard/hr', icon: 'Users2', clock: 8, layer: 'outer', premium: false, blurb: 'People operations: members and workload distribution.' },
   { id: 'marketing', name: 'Marketing', href: '/dashboard/marketing', icon: 'Megaphone', clock: 8.5, layer: 'inner', premium: false, blurb: 'Campaigns, posts and outbound marketing.' },
-  { id: 'customers', name: 'Customers', href: '/dashboard/customers', icon: 'Heart', clock: 9, layer: 'outer', premium: true, blurb: 'Customer intelligence and relationship management.' },
-  { id: 'sales', name: 'Sales', href: '/dashboard/sales', icon: 'Target', clock: 9.5, layer: 'inner', premium: false, blurb: 'Deal pipeline and sales execution.' },
   { id: 'analytics', name: 'Analytics', href: '/dashboard/analytics', icon: 'BarChart3', clock: 10, layer: 'outer', premium: false, blurb: 'Full analytics dashboard over live workspace data.' },
   { id: 'reports', name: 'Reports', href: '/dashboard/reports', icon: 'FileText', clock: 10.5, layer: 'inner', premium: false, blurb: 'Audit-ready reporting on the entire ecosystem.' },
 ];
 
-// Exactly 10 premium PRO EXCLUSIVE tools.
+// Exactly 8 premium PRO EXCLUSIVE tools.
 export const PREMIUM_IDS = new Set(HUB_TOOLS.filter((t) => t.premium).map((t) => t.id));
 
 // ---------------------------------------------------------------------------
@@ -64,10 +60,8 @@ export const ZONE_LABELS: Record<RestoredZone, string> = {
   life: 'Personal Life',
 };
 
-// 31 restored tools: 20 business + 11 personal life.
+// 29 restored tools: 18 business + 11 personal life.
 export const RESTORED_TOOLS: RestoredTool[] = [
-  { id: 'projects', name: 'Projects', href: '/dashboard/projects', icon: 'FolderKanban', zone: 'business', blurb: 'Portfolio health and delivery: every project, its progress and its blockers.' },
-  { id: 'scheduler', name: 'Scheduler', href: '/dashboard/scheduler', icon: 'CalendarClock', zone: 'business', blurb: 'Day planner: schedule, focus blocks and a sequenced weekly plan.' },
   { id: 'closer', name: 'Closer', href: '/dashboard/closer', icon: 'Handshake', zone: 'business', blurb: 'Deal closer: follow-up pushes on deals and invoices that need landing.' },
   { id: 'recruiter', name: 'Recruiter', href: '/dashboard/recruiter', icon: 'UserPlus', zone: 'business', blurb: 'Talent recruiter: role briefs, screening questions and hiring pipeline.' },
   { id: 'bookkeeper', name: 'Bookkeeper', href: '/dashboard/bookkeeper', icon: 'Calculator', zone: 'business', blurb: 'Bookkeeper Lite: plain-English financial summaries from live records.' },
@@ -127,7 +121,7 @@ export function assertHub(): HubCheck {
     uniqueIds: new Set(ids).size === ids.length,
     iconCoverage: icons.every(Boolean) && new Set(icons).size === icons.length,
     hrefCoverage: new Set(HUB_TOOLS.map((t) => t.href)).size === HUB_TOOLS.length,
-    all24: HUB_TOOLS.length === 24,
+    all24: HUB_TOOLS.length === 20,
   };
   return check;
 }

@@ -15,11 +15,14 @@ const demoUsers = [
 
 export default function LoginPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('owner@nexus.local');
   const [password, setPassword] = useState('password');
+  const [name, setName] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const submit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -27,10 +30,25 @@ export default function LoginPage() {
       setError('Enter your email and password.');
       return;
     }
+    if (mode === 'signup' && password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
-      await auth.login(email.trim(), password);
+      if (mode === 'signup') {
+        const r = await auth.signup(email.trim(), password, name.trim() || email.trim().split('@')[0]);
+        if (r.needsVerification) {
+          setNotice('Account created. Check your inbox to confirm your email, then sign in.');
+          setMode('signin');
+          setBusy(false);
+          return;
+        }
+      } else {
+        await auth.login(email.trim(), password);
+      }
       router.push('/dashboard/platform');
       router.refresh();
     } catch (err) {
@@ -47,7 +65,20 @@ export default function LoginPage() {
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold text-white">Nexus Platform</h1>
-          <p className="text-sm text-gray-500 mt-1">Sign in to your workspace</p>
+          <p className="text-sm text-gray-500 mt-1">{mode === 'signin' ? 'Sign in to your workspace' : 'Create your account'}</p>
+        </div>
+
+        <div className="mb-4 grid grid-cols-2 rounded-lg border border-white/10 overflow-hidden">
+          {(['signin', 'signup'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => { setMode(m); setError(null); setNotice(null); }}
+              className={`px-3 py-2 text-xs font-medium ${mode === m ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}
+            >
+              {m === 'signin' ? 'Sign in' : 'Sign up'}
+            </button>
+          ))}
         </div>
 
         <form onSubmit={submit} className="rounded-xl border border-white/8 bg-[#101018] p-6 space-y-4">
@@ -60,6 +91,17 @@ export default function LoginPage() {
               className="w-full rounded-lg border border-white/10 bg-[#0b0b12] px-3 py-2 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50"
             />
           </div>
+          {mode === 'signup' && (
+            <div>
+              <label className="mb-1 block text-[11px] uppercase tracking-wider text-gray-500">Name</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className="w-full rounded-lg border border-white/10 bg-[#0b0b12] px-3 py-2 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50"
+              />
+            </div>
+          )}
           <div>
             <label className="mb-1 block text-[11px] uppercase tracking-wider text-gray-500">Password</label>
             <div className="relative">
@@ -67,7 +109,7 @@ export default function LoginPage() {
                 type={showPw ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={mode === 'signup' ? 'At least 8 characters' : '••••••••'}
                 className="w-full rounded-lg border border-white/10 bg-[#0b0b12] px-3 py-2 pr-10 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50"
               />
               <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
@@ -77,6 +119,7 @@ export default function LoginPage() {
           </div>
 
           {error ? <p className="text-xs text-rose-400">{error}</p> : null}
+          {notice ? <p className="text-xs text-emerald-400">{notice}</p> : null}
 
           <button
             type="submit"
@@ -84,10 +127,11 @@ export default function LoginPage() {
             className="w-full flex items-center justify-center gap-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium py-2.5 border border-purple-500/40 transition-colors disabled:opacity-60"
           >
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {busy ? 'Signing in...' : 'Sign in'}
+            {busy ? (mode === 'signin' ? 'Signing in...' : 'Creating account...') : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
         </form>
 
+        {mode === 'signin' && (
         <div className="mt-5 rounded-xl border border-white/5 bg-[#0d0d12] p-4">
           <p className="text-[11px] uppercase tracking-wider text-gray-600 mb-2">Seed accounts (password: password)</p>
           <div className="grid gap-1">
@@ -107,6 +151,7 @@ export default function LoginPage() {
             ))}
           </div>
         </div>
+        )}
       </div>
     </div>
   );

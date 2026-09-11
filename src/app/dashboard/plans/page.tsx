@@ -32,6 +32,8 @@ export default function PlansPage() {
     setPayState('paying');
     try {
       const r = await payApi.createOrder(plan.id, plan.price.toFixed(2));
+      // Remember the pending order so capture runs on return from PayPal.
+      sessionStorage.setItem('nexus_pending_paypal', JSON.stringify({ orderId: r.orderId, planId: plan.id }));
       window.location.href = r.approveLink;
       return; // redirect; page reloads after PayPal
     } catch (e) {
@@ -48,15 +50,32 @@ export default function PlansPage() {
     const status = q.get('paypal');
     if (status === 'success') {
       window.setTimeout(() => setPayState('paying'), 0);
-      // order completes server-side via webhook; poll active plan
-      void plansApi.list().then((r) => setData({ active: r.active })).catch(() => null).finally(() => {
-        setPayState('idle');
-      });
+      void (async () => {
+        let captured = false;
+        const raw = sessionStorage.getItem('nexus_pending_paypal');
+        if (raw) {
+          try {
+            const pending = JSON.parse(raw) as { orderId?: string; planId?: string };
+            sessionStorage.removeItem('nexus_pending_paypal');
+            if (pending.orderId && pending.planId) {
+              await payApi.capture(pending.orderId, pending.planId);
+              captured = true;
+            }
+          } catch (e) {
+            window.setTimeout(() => alert('Payment could not be confirmed: ' + (e as Error).message), 0);
+          }
+        }
+        // Refresh the active plan regardless (also covers a webhook-completed order).
+        await plansApi.list().then((r) => setData({ active: r.active })).catch(() => null);
+        setPayState(captured ? 'done' : 'idle');
+        window.history.replaceState({}, '', window.location.pathname);
+      })();
     } else if (status === 'cancelled') {
       window.setTimeout(() => setPayState('cancelled'), 0);
       window.setTimeout(() => setPayState('idle'), 4000);
     }
-  }, [setData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -72,6 +91,11 @@ export default function PlansPage() {
         </p>
       </div>
 
+      {payState === 'done' && (
+        <div className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 text-xs text-emerald-200">
+          Payment confirmed! Your plan is now active.
+        </div>
+      )}
       {payState === 'paying' && (
         <div className="rounded-lg border border-blue-400/30 bg-blue-400/10 p-3 text-xs text-blue-200">
           Processing PayPal payment… this may take a moment.

@@ -48,11 +48,11 @@ export default function CoreHubPage() {
 
   useEffect(() => {
     const c = assertHub();
-    if (c.total !== 24 || c.premium !== 10 || c.standard !== 14) {
+    if (c.total !== 20 || c.premium !== 8 || c.standard !== 12) {
       console.error('HUB ASSERTION FAILED', c);
     }
     const a = assertAllTools();
-    if (a.radialTotal !== 24 || a.restoredTotal !== 31 || a.allTotal !== 55) {
+    if (a.radialTotal !== 20 || a.restoredTotal !== 29 || a.allTotal !== 49) {
       console.error('ALL-TOOLS ASSERTION FAILED', a);
     }
     const t = setTimeout(() => setBooted(true), 120);

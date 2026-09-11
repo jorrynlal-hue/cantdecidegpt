@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { Card, Badge, Btn, Input, Field, Empty, Spinner, Modal, fmtDate } from '@/components/platform/ui';
+import { Card, Badge, Btn, Input, Field, Empty, Spinner, Modal, fmtDate, fmtDateTime } from '@/components/platform/ui';
 import { useCollection } from '@/components/platform/data';
 import { collection } from '@/lib/core/client';
+import { AIMemo } from '@/components/platform/AIMemo';
 
 interface EventRow { id: string; title: string; start: string; end?: string; allDay?: boolean; kind: string; createdAt: string; }
-interface Task { id: string; title: string; dueDate?: string; status: string; }
+interface Task { id: string; title: string; dueDate?: string; status: string; priority?: string; }
 interface Project { id: string; name: string; deadline?: string; }
 
 export default function CalendarPage() {
@@ -19,6 +20,15 @@ export default function CalendarPage() {
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [allDay, setAllDay] = useState(true);
+
+  const now = new Date().toISOString();
+  const upcoming = events.rows.filter((e) => e.start >= now).sort((a, b) => a.start.localeCompare(b.start)).slice(0, 12);
+  const open = tasks.rows.filter((t) => !['completed', 'cancelled'].includes(t.status));
+
+  const planContext =
+    upcoming.length > 0 || open.length > 0
+      ? `Calendar (next):\n${upcoming.map((e) => `- ${fmtDateTime(e.start)} ${e.title}${e.kind ? ` [${e.kind}]` : ''}`).join('\n') || '  none scheduled'}\n\nOpen tasks (${open.length}):\n${open.slice(0, 8).map((t) => `- ${t.title}${t.priority ? ` [${t.priority}]` : ''}${t.dueDate ? ` due ${fmtDateTime(t.dueDate)}` : ''}`).join('\n')}\n\nBuild a realistic weekly plan that puts first things first.`
+      : '';
 
   const rows = useMemo(() => {
     const list: { date: string; kind: string; title: string; id: string; deletable?: boolean }[] = [];
@@ -93,6 +103,19 @@ export default function CalendarPage() {
           )}
         </div>
       )}
+
+      <AIMemo
+        toolId="scheduler"
+        title="Weekly Plan"
+        sub="Generates a sequenced plan from your calendar and open tasks."
+        placeholder="e.g. Plan my week around closing the pricing project and carving out two deep-work afternoons."
+        examples={['Plan the week, protecting focus blocks first', 'Find 3 slots this week for deep work between meetings', 'Sequence my tasks by deadline from today']}
+        context={planContext || undefined}
+        prompt={(input, ctx) =>
+          `You are the Scheduler for the Imprint operating system. ${ctx ? `${ctx}\n\n` : ''}Instructions from the user: ${input}\n\nGive: (1) a day-by-day plan, (2) protected focus blocks, (3) the single most important outcome this week. Be concrete and realistic.`
+        }
+        saveTitle={(input) => `Weekly plan — ${input.slice(0, 48)}`}
+      />
 
       <Modal open={show} onClose={() => setShow(false)} title="New event">
         <div className="space-y-3">

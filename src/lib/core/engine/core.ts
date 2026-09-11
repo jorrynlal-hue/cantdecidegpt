@@ -291,3 +291,35 @@ export function createPlatformUser(ctx: Ctx, db: DB, input: { email: string; nam
   persist(db);
   return user;
 }
+
+// Match an authenticated identity to an app user, creating the user + a
+// personal workspace on first sign-in so the app always has a home.
+export function ensureAppUser(db: DB, email: string, name: string, supabaseId?: string): User {
+  const normalized = email.trim().toLowerCase();
+  let user = db.users.find((u) => u.email === normalized);
+  if (!user) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- lazy require avoids db<->engine/core cycle
+    const { uid, now: dbNow, persist: persistDb } = require('../db') as typeof import('../db');
+    const id = supabaseId ?? uid();
+    user = {
+      id,
+      email: normalized,
+      passwordHash: '',
+      name: name || normalized.split('@')[0] || 'New user',
+      role: 'owner',
+      createdAt: dbNow(),
+    };
+    db.users.push(user);
+    db.workspaces.push({
+      id: uid(),
+      name: 'My Workspace',
+      slug: `ws-${id.slice(0, 8)}`,
+      ownerUserId: id,
+      memberIds: [id],
+      settings: {},
+      createdAt: dbNow(),
+    });
+    persistDb(db);
+  }
+  return user;
+}
