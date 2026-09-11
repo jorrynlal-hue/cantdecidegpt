@@ -151,7 +151,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
   const pathname = usePathname();
 
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-[#0d0d12] border-r border-white/5">
+    <div className="flex h-full flex-col bg-black border-r border-white/5">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-16 border-b border-white/5 shrink-0">
         <Sparkles className="w-6 h-6 text-purple-400 shrink-0" />

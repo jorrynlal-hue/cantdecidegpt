@@ -11,7 +11,7 @@ import {
   FlaskConical, Repeat, Scale, MessageSquareOff, Moon, Radar, Briefcase,
   Ghost, LifeBuoy, Microscope, FileCheck, PiggyBank, ShoppingBag, Home,
   Compass, CalendarCheck, Wrench, Eye, Bell, Shield, Inbox, Cpu, Mic, MicOff,
-  Zap, ArrowDown, type LucideIcon,
+  Zap, ArrowDown, Volume2, VolumeX, type LucideIcon,
 } from 'lucide-react';
 import { HUB_TOOLS, RESTORED_TOOLS, ZONE_LABELS, ALL_TOOLS, assertHub, assertAllTools, hubTotal, type HubTool, type RestoredTool } from '@/lib/hub';
 import { collection } from '@/lib/core/client';
@@ -129,6 +129,28 @@ function ting() {
   } catch {
     /* sound is best-effort until the browser allows audio */
   }
+}
+
+function itemTs(v: string): number {
+  if (/^\d+(\.\d+)?$/.test(v.trim())) {
+    const n = Number(v);
+    if (!isNaN(n)) return n > 1e12 ? n : n * 1000;
+  }
+  const t = new Date(v).getTime();
+  return isNaN(t) ? 0 : t;
+}
+
+function agoStr(iso: string): string {
+  if (!iso) return '';
+  const t = itemTs(iso);
+  if (!t) return '';
+  const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (s < 60) return 'just now';
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
 function sampleSparkline(rows: Row[]): number[] {
@@ -277,6 +299,8 @@ export default function CommandCenterPage() {
   const pathname = usePathname();
   const [hovered, setHovered] = useState<string | null>(null);
   const [attn, setAttn] = useState<Partial<Record<ProbeKey, { rows: Row[]; loaded: boolean }>>>({});
+  const [activity, setActivity] = useState<Row[]>([]);
+  const [chimeOn, setChimeOn] = useState(true);
   const lastTotal = useRef(-1);
   const lastDing = useRef(0);
 
@@ -286,10 +310,12 @@ export default function CommandCenterPage() {
   }, []);
 
   useEffect(() => {
-    const unlock = () => ting();
+    const unlock = () => {
+      if (chimeOn) ting();
+    };
     window.addEventListener('pointerdown', unlock);
     return () => window.removeEventListener('pointerdown', unlock);
-  }, []);
+  }, [chimeOn]);
 
   useEffect(() => {
     let alive = true;
@@ -311,6 +337,24 @@ export default function CommandCenterPage() {
     };
     void load();
     const iv = setInterval(() => void load(), 30000);
+    return () => {
+      alive = false;
+      clearInterval(iv);
+    };
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const rows = (await collection.list('activities')) as Row[];
+        if (alive) setActivity(rows);
+      } catch {
+        if (alive) setActivity([]);
+      }
+    };
+    void load();
+    const iv = setInterval(() => void load(), 45000);
     return () => {
       alive = false;
       clearInterval(iv);
@@ -363,14 +407,14 @@ export default function CommandCenterPage() {
   }, [counts]);
 
   useEffect(() => {
-    if (attentionTotal <= 0) return;
+    if (attentionTotal <= 0 || !chimeOn) return;
     const now = Date.now();
     if (attentionTotal > lastTotal.current && now - lastDing.current > 2500) {
       ting();
       lastDing.current = now;
     }
     lastTotal.current = attentionTotal;
-  }, [attentionTotal]);
+  }, [attentionTotal, chimeOn]);
 
   const rows: Record<ProbeKey, Row[]> = {
     tasks: attn.tasks?.rows ?? [],
@@ -396,6 +440,21 @@ export default function CommandCenterPage() {
   );
   const zoneMax = Math.max(1, ...zoneTotals.map((z) => z.total));
   const sparkline = useMemo(() => sampleSparkline(rows.tasks), [rows.tasks]);
+
+  const recentActivity = useMemo(
+    () =>
+      activity
+        .map((r) => ({
+          at: str(r, 'at') || str(r, 'createdAt'),
+          actor: str(r, 'actorSource') || str(r, 'actorId'),
+          action: str(r, 'action') || str(r, 'title'),
+          object: str(r, 'objectLabel') || str(r, 'objectType') || '',
+        }))
+        .filter((a) => a.at)
+        .sort((a, b) => itemTs(b.at) - itemTs(a.at))
+        .slice(0, 6),
+    [activity],
+  );
 
   const toolById = (id: string): HubTool | RestoredTool | undefined => ALL_TOOLS.find((t) => t.id === id);
   const toolIcon = (tool: HubTool | RestoredTool) => ICONS[tool.icon] ?? Settings;
@@ -477,6 +536,14 @@ export default function CommandCenterPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setChimeOn((v) => !v)}
+            title={chimeOn ? 'Chime is on — click to mute' : 'Chime is muted — click to hear attention alerts'}
+            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${chimeOn ? 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10' : 'border-white/5 bg-white/[0.02] text-gray-600 hover:text-gray-400'}`}
+          >
+            {chimeOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            Chime
+          </button>
           <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-gray-400">
             {HUB_TOOLS.length} core · {RESTORED_TOOLS.length} restored
           </span>
@@ -542,6 +609,27 @@ export default function CommandCenterPage() {
           <p className="mt-1 text-[10px] text-gray-600">work created · rolling 72h</p>
         </div>
       </div>
+
+      {recentActivity.length > 0 && (
+        <div className="mb-4 rounded-xl border border-white/10 bg-[#050508] p-3">
+          <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
+            <Activity className="h-3.5 w-3.5" /> Recent activity
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {recentActivity.map((a, i) => (
+              <div key={i} className="flex items-center gap-2 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400" />
+                <span className="min-w-0">
+                  <span className="block truncate text-[11px] text-gray-200">{a.action}</span>
+                  <span className="block truncate text-[10px] text-gray-600">
+                    {a.object || (a.actor === 'user' ? 'system' : a.actor)} · {agoStr(a.at)}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="relative overflow-x-auto">
         <div className="relative" style={{ width: CANVAS_W, height: CANVAS_H }}>
