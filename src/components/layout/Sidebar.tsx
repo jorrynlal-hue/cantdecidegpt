@@ -34,6 +34,12 @@ import {
   Boxes,
   CreditCard,
   HeartHandshake,
+  Bot,
+  Brain,
+  Store,
+  Briefcase,
+  Zap,
+  Cpu,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -46,55 +52,89 @@ interface NavItem {
 
 const navGroups: Array<{ label: string; items: NavItem[] }> = [
   {
-    label: 'AI Tools',
+    label: 'Home',
     items: [
-      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { label: 'Chat', href: '/dashboard/chat', icon: MessageSquare },
-      { label: 'Code Generator', href: '/dashboard/code', icon: Code },
-      { label: 'Image Generator', href: '/dashboard/image', icon: ImageIcon },
-      { label: 'Summarizer', href: '/dashboard/summarize', icon: FileText },
-      { label: 'Translator', href: '/dashboard/translate', icon: Languages },
-      { label: 'Writing Assistant', href: '/dashboard/writing', icon: PenTool },
-      { label: 'Data Analysis', href: '/dashboard/analyze', icon: BarChart3 },
-      { label: 'Voice-to-Text', href: '/dashboard/voice', icon: Mic },
+      { label: 'What are we doing today?', href: '/dashboard/command', icon: Zap },
+      { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+      { label: 'Tasks & Projects', href: '/dashboard/work', icon: ListChecks, prefix: '/dashboard/work' },
+      { label: 'Calendar', href: '/dashboard/calendar', icon: Calendar, prefix: '/dashboard/calendar' },
     ],
   },
   {
-    label: 'Operations Control Plane',
+    label: 'Work',
     items: [
       { label: 'Work Queue', href: '/dashboard/operations', icon: ClipboardList, prefix: '/dashboard/operations' },
       { label: 'Approval Center', href: '/dashboard/operations/approvals', icon: CheckSquare, prefix: '/dashboard/operations/approvals' },
+    ],
+  },
+  {
+    label: 'AI',
+    items: [
+      { label: 'AI Workforce', href: '/dashboard/workforce', icon: Bot, prefix: '/dashboard/workforce' },
+      { label: 'Skills', href: '/dashboard/skills', icon: Brain, prefix: '/dashboard/skills' },
+      { label: 'AI Studio', href: '/dashboard/ai', icon: Cpu, prefix: '/dashboard/ai' },
+      { label: 'Chat', href: '/dashboard/chat', icon: MessageSquare, prefix: '/dashboard/chat' },
+    ],
+  },
+  {
+    label: 'People',
+    items: [
+      { label: 'Human Workspace', href: '/dashboard/humans', icon: HeartHandshake, prefix: '/dashboard/humans' },
+      { label: 'Team', href: '/dashboard/team', icon: Users, prefix: '/dashboard/team' },
+      { label: 'Plans & Billing', href: '/dashboard/plans', icon: CreditCard, prefix: '/dashboard/plans' },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [
+      { label: 'Business Overview', href: '/dashboard/platform', icon: Briefcase, prefix: '/dashboard/platform' },
+      { label: 'CRM & Sales', href: '/dashboard/crm', icon: Users, prefix: '/dashboard/crm' },
+      { label: 'Marketing', href: '/dashboard/marketing', icon: Megaphone, prefix: '/dashboard/marketing' },
+      { label: 'Email', href: '/dashboard/email', icon: Mail, prefix: '/dashboard/email' },
+      { label: 'Finance', href: '/dashboard/finance', icon: Wallet, prefix: '/dashboard/finance' },
+      { label: 'Automation', href: '/dashboard/automation', icon: Workflow, prefix: '/dashboard/automation' },
+      { label: 'Workspaces', href: '/dashboard/workspaces', icon: Boxes, prefix: '/dashboard/workspaces' },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { label: 'Code Generator', href: '/dashboard/code', icon: Code, prefix: '/dashboard/code' },
+      { label: 'Image Generator', href: '/dashboard/image', icon: ImageIcon, prefix: '/dashboard/image' },
+      { label: 'Summarizer', href: '/dashboard/summarize', icon: FileText, prefix: '/dashboard/summarize' },
+      { label: 'Translator', href: '/dashboard/translate', icon: Languages, prefix: '/dashboard/translate' },
+      { label: 'Writing Assistant', href: '/dashboard/writing', icon: PenTool, prefix: '/dashboard/writing' },
+      { label: 'Data Analysis', href: '/dashboard/analyze', icon: BarChart3, prefix: '/dashboard/analyze' },
+      { label: 'Voice-to-Text', href: '/dashboard/voice', icon: Mic, prefix: '/dashboard/voice' },
+      { label: 'Documents', href: '/dashboard/docs', icon: FileText, prefix: '/dashboard/docs' },
+      { label: 'Integrations', href: '/dashboard/integrations', icon: Plug, prefix: '/dashboard/integrations' },
+      { label: 'Notifications', href: '/dashboard/notifications', icon: Bell, prefix: '/dashboard/notifications' },
+    ],
+  },
+  {
+    label: 'Marketplace',
+    items: [
+      { label: 'Opportunities', href: '/dashboard/marketplace', icon: Store, prefix: '/dashboard/marketplace' },
+    ],
+  },
+  {
+    label: 'Memory',
+    items: [
+      { label: 'Work Memory', href: '/dashboard/memory', icon: Brain, prefix: '/dashboard/memory' },
+    ],
+  },
+  {
+    label: 'Trust',
+    items: [
+      { label: 'Trust Center', href: '/dashboard/trust', icon: ShieldCheck, prefix: '/dashboard/trust' },
       { label: 'Policy Center', href: '/dashboard/operations/policies', icon: ShieldCheck, prefix: '/dashboard/operations/policies' },
       { label: 'Audit Ledger', href: '/dashboard/operations/audit', icon: ScrollText, prefix: '/dashboard/operations/audit' },
       { label: 'Measure & Learn', href: '/dashboard/operations/metrics', icon: Activity, prefix: '/dashboard/operations/metrics' },
     ],
   },
   {
-    label: 'Human + AI',
+    label: 'Settings',
     items: [
-      { label: 'Human Workspace', href: '/dashboard/humans', icon: HeartHandshake, prefix: '/dashboard/humans' },
-      { label: 'Plans & Billing', href: '/dashboard/plans', icon: CreditCard, prefix: '/dashboard/plans' },
-    ],
-  },
-  {
-    label: 'Work Platform',
-    items: [
-      { label: 'Overview', href: '/dashboard/platform', icon: LayoutDashboard, prefix: '/dashboard/platform' },
-      { label: 'Tasks & Projects', href: '/dashboard/work', icon: ListChecks, prefix: '/dashboard/work' },
-      { label: 'Calendar', href: '/dashboard/calendar', icon: Calendar, prefix: '/dashboard/calendar' },
-      { label: 'CRM & Sales', href: '/dashboard/crm', icon: Users, prefix: '/dashboard/crm' },
-      { label: 'Marketing', href: '/dashboard/marketing', icon: Megaphone, prefix: '/dashboard/marketing' },
-      { label: 'Email', href: '/dashboard/email', icon: Mail, prefix: '/dashboard/email' },
-      { label: 'AI Studio', href: '/dashboard/ai', icon: Sparkles, prefix: '/dashboard/ai' },
-      { label: 'Documents', href: '/dashboard/docs', icon: FileText, prefix: '/dashboard/docs' },
-      { label: 'Finance', href: '/dashboard/finance', icon: Wallet, prefix: '/dashboard/finance' },
-      { label: 'Automation', href: '/dashboard/automation', icon: Workflow, prefix: '/dashboard/automation' },
-      { label: 'Approvals', href: '/dashboard/approvals', icon: CheckSquare, prefix: '/dashboard/approvals' },
-      { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3, prefix: '/dashboard/analytics' },
-      { label: 'Integrations', href: '/dashboard/integrations', icon: Plug, prefix: '/dashboard/integrations' },
-      { label: 'Notifications', href: '/dashboard/notifications', icon: Bell, prefix: '/dashboard/notifications' },
-      { label: 'Team', href: '/dashboard/team', icon: Users, prefix: '/dashboard/team' },
-      { label: 'Workspaces', href: '/dashboard/workspaces', icon: Boxes, prefix: '/dashboard/workspaces' },
       { label: 'Settings', href: '/dashboard/settings', icon: Settings, prefix: '/dashboard/settings' },
     ],
   },
@@ -124,7 +164,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
               transition={{ duration: 0.2 }}
               className="text-lg font-bold text-white whitespace-nowrap overflow-hidden"
             >
-              Can't Decide GPT
+              Can&apos;t Decide GPT
             </motion.span>
           )}
         </AnimatePresence>

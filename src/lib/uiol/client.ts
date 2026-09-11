@@ -1,6 +1,8 @@
 // Typed client for the UIOL control-plane API.
 import { WorkItem, Stage, ControlMode, FinalOutcome } from '@/lib/uiol/types';
-export type { WorkItem, Stage, ControlMode, FinalOutcome };
+import type { ExecutionMode, DecisionReceipt, CommandCard, CommandBucket, WorkForceAgent, Skill } from '@/lib/uiol/layer';
+export type { WorkItem, Stage, ControlMode, FinalOutcome, ExecutionMode, DecisionReceipt, WorkForceAgent, Skill };
+export type { CommandCard, CommandBucket };
 
 export interface ActorInput {
   identity?: string;
@@ -23,7 +25,7 @@ export const api = {
   },
   workitem: async (id: string) =>
     parse<{ ok: boolean; workitem: WorkItem }>(await fetch(`/api/uiol/workitems/${id}`)),
-  createWorkitem: async (body: { template_id: string; title: string; objective: string; org_context?: string; related_customer_case?: string; control_mode: ControlMode; requester_id?: string; requester_display?: string }, actor?: ActorInput) =>
+  createWorkitem: async (body: { template_id: string; title: string; objective: string; org_context?: string; related_customer_case?: string; control_mode: ControlMode; execution_mode?: ExecutionMode; requester_id?: string; requester_display?: string }, actor?: ActorInput) =>
     parse<{ ok: boolean; workitem: WorkItem }>(
       await fetch('/api/uiol/workitems', {
         method: 'POST',
@@ -31,7 +33,7 @@ export const api = {
         body: JSON.stringify({ ...body, ...actor }),
       })
     ),
-  updateWorkitem: async (id: string, patch: { title?: string; objective?: string; control_mode?: ControlMode; accountable_owner?: string }, actor?: ActorInput) =>
+  updateWorkitem: async (id: string, patch: { title?: string; objective?: string; control_mode?: ControlMode; execution_mode?: ExecutionMode; accountable_owner?: string }, actor?: ActorInput) =>
     parse<{ ok: boolean; workitem: WorkItem }>(
       await fetch(`/api/uiol/workitems/${id}`, {
         method: 'PATCH',
@@ -39,6 +41,33 @@ export const api = {
         body: JSON.stringify({ ...patch, ...actor }),
       })
     ),
+  takeover: async (id: string, actor?: ActorInput) =>
+    parse<{ ok: boolean; workitem: WorkItem }>(
+      await fetch(`/api/uiol/workitems/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'execute', action: 'takeover', ...actor }),
+      })
+    ),
+  giveback: async (id: string, mode?: ExecutionMode, actor?: ActorInput) =>
+    parse<{ ok: boolean; workitem: WorkItem }>(
+      await fetch(`/api/uiol/workitems/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'execute', action: 'giveback', execution_mode: mode, ...actor }),
+      })
+    ),
+  command: async () => parse<{ ok: boolean; command: { buckets: Record<CommandBucket, CommandCard[]>; total: number } }>(await fetch('/api/uiol/command')),
+  workforce: async () => parse<{ ok: boolean; workforce: { agents: Array<WorkForceAgent & { active: number; status: 'busy' | 'ready' }>; skills: Array<Skill & { activeItems: number }> } }>(await fetch('/api/uiol/workforce')),
+  teach: async (body: { statement: string; scope?: string; category?: string; project?: string }) =>
+    parse<{ stored: string; scope: string; note: string }>(
+      await fetch('/api/uiol/teach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+    ),
+  receipt: async (id: string) => parse<{ ok: boolean; receipt: DecisionReceipt | null }>(await fetch(`/api/uiol/receipt/${id}`)),
   stageAction: async (id: string, stage: Stage, action: string, payload: { note?: string; decision?: 'approved' | 'rejected'; approval_id?: string; follow_ups?: string[]; outcome?: FinalOutcome } = {}, actor?: ActorInput) =>
     parse<{ ok: boolean; workitem?: WorkItem; error?: string; verdict?: string; decisions?: Array<{ policy_id: string; decision: string; reason: string }>; proposal?: unknown }>(
       await fetch(`/api/uiol/workitems/${id}`, {

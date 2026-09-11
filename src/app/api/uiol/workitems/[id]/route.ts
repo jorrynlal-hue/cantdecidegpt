@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { getWorkItem, updateWorkItem, actStage, publicShape } from '@/lib/uiol/engine';
+import { getWorkItem, updateWorkItem, actStage, takeOver, giveBack, publicShape } from '@/lib/uiol/engine';
 
 export const runtime = 'nodejs';
 
@@ -19,6 +19,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       title: body.title,
       objective: body.objective,
       control_mode: body.control_mode,
+      execution_mode: body.execution_mode,
       accountable_owner: body.accountable_owner,
     });
     if (!res.ok || !res.workitem) return Response.json(res, { status: 400 });
@@ -29,6 +30,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 }
 
 // Stage actions: capture/understand/plan/check/approve/execute/verify/record/learn
+// plus strategy handshakes: takeover / giveback
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   try {
@@ -42,6 +44,16 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       display: body.display || 'Operator',
       roles: (body.roles as string[]) || ['Operations Approver'],
     };
+    if (body.stage === 'execute' && body.action === 'takeover') {
+      const res = takeOver(id, actor);
+      if (!res.ok) return Response.json(res, { status: 422 });
+      return Response.json({ ...res, workitem: publicShape(res.workitem!) });
+    }
+    if (body.stage === 'execute' && body.action === 'giveback') {
+      const res = giveBack(id, body.execution_mode, actor);
+      if (!res.ok) return Response.json(res, { status: 422 });
+      return Response.json({ ...res, workitem: publicShape(res.workitem!) });
+    }
     const res = actStage(id, body.stage, body.action, actor, {
       note: body.note,
       decision: body.decision,

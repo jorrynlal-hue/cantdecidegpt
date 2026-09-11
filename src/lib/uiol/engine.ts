@@ -20,9 +20,20 @@ import {
   buildApprovalGates,
   stageHelpText,
   isBefore,
+  STAGE_LABELS,
 } from './lifecycle';
 import { evaluatePolicies, worstDecision } from './policies';
 import { generateProposal, buildExpectedOutcome, Proposal } from './planning';
+import {
+  bucketFor,
+  CommandCard,
+  decisionReceiptFor,
+  DecisionReceipt,
+  executionSummaryFor,
+  controlModeFor,
+  SKILLS,
+  WORKFORCE_AGENTS,
+} from './layer';
 import { loadDB, persist, nextId, newEvidenceId, pushAudit, DB } from './store';
 import { SEED_ORG_CONTEXT } from './seed';
 
@@ -172,6 +183,98 @@ export function actOnApproval(workitemId: string, approvalId: string, decision: 
   return { ok: true, workitem: item };
 }
 
+// ------------------------------------------------------------- strategy read paths
+
+// Command Center: What needs to happen? (NOW / AI working / Waiting / Completed)
+export function commandCenter() {
+  const db = loadDB();
+  const cards: CommandCard[] = db.workitems.map((item) => {
+    const exec = executionSummaryFor(item);
+    const bucket = bucketFor(item);
+    const stage_label = STAGE_LABELS[item.stage];
+    return {
+      item: publicShape(item),
+      bucket,
+      stage_label,
+      summary: item.objective,
+      assignee:
+        item.control_mode === 'human_only'
+          ? item.accountable_owner
+          : exec.execution_mode === 'ai_only'
+            ? 'AI workforce'
+            : 'AI + ' + item.accountable_owner,
+      execution: exec,
+    };
+  });
+  const buckets = {
+    now: cards.filter((c) => c.bucket === 'now'),
+    ai_working: cards.filter((c) => c.bucket === 'ai_working'),
+    waiting: cards.filter((c) => c.bucket === 'waiting'),
+    completed: cards.filter((c) => c.bucket === 'completed'),
+  };
+  return { buckets, total: cards.length };
+}
+
+// AI Workforce roster with live routing + per-worker load derived from work items.
+export function workforceSnapshot() {
+  const db = loadDB();
+  const agents = WORKFORCE_AGENTS.map((a) => {
+    const items = db.workitems.filter((i) => i.final_outcome === 'in_progress' && i.required_capabilities.some((c) => a.capabilities.includes(c)));
+    const active = items.length;
+    return { ...a, active, status: active > 0 ? 'busy' : 'ready' as const };
+  });
+  const skills = SKILLS.map((s) => {
+    const items = db.workitems.filter((i) => i.required_capabilities.some((c) => s.capabilities.includes(c)));
+    return { ...s, activeItems: items.length };
+  });
+  return { agents, skills };
+}
+
+// Decision Receipt for a completed work item. Null while still in progress.
+export function decisionReceipt(id: string): DecisionReceipt | null {
+  const item = getWorkItem(id);
+  if (!item || item.final_outcome === 'in_progress') return null;
+  return decisionReceiptFor(item);
+}
+
+// Take over: hand an AI-managed work item to a human at any stage. The human keeps
+// everything (context, plan, evidence) and becomes the executor.
+export function takeOver(id: string, actor: Actor): StageActionResult {
+  const db = loadDB();
+  const item = db.workitems.find((i) => i.id === id);
+  if (!item) return { ok: false, error: 'Work item not found' };
+  if (item.final_outcome !== 'in_progress') return { ok: false, error: 'Work item is already completed.' };
+
+  const prev = item.control_mode;
+  item.control_mode = 'human_only';
+  item.execution_mode = undefined;
+  item.stage_status.execute = item.stage === 'execute' ? 'in_progress' : item.stage_status.execute;
+  addEvidence(item, 'Take over by human', 'record', `${item.title} handed to ${actorLabel(actor)}. Control now human_only. AI becomes assistant; context preserved.`, actor);
+  log(db, item, actor, 'workitem.takeover', prev, 'human_only', `Human took over work item ${id}. AI remains available to assist.`);
+  stamp(item);
+  persist(db);
+  return { ok: true, workitem: publicShape(item) };
+}
+
+// Give back to AI: after a human does their part, AI re-engages under the chosen mode.
+export function giveBack(id: string, mode: WorkItem['execution_mode'], actor: Actor): StageActionResult {
+  const db = loadDB();
+  const item = db.workitems.find((i) => i.id === id);
+  if (!item) return { ok: false, error: 'Work item not found' };
+  if (item.control_mode !== 'human_only') return { ok: false, error: 'Work item is not human-controlled.' };
+
+  const chosen: NonNullable<WorkItem['execution_mode']> = mode || 'auto';
+  const control = controlModeFor(chosen, item);
+  const prev = item.control_mode;
+  item.execution_mode = chosen;
+  item.control_mode = control;
+  addEvidence(item, 'Give back to AI', 'record', `${item.title} handed back to AI under ${chosen} (${control}). Human hand-off preserved in evidence.`, actor);
+  log(db, item, actor, 'workitem.giveback', 'human_only', prev, `AI re-engaged under ${chosen} -> ${control}.`);
+  stamp(item);
+  persist(db);
+  return { ok: true, workitem: publicShape(item) };
+}
+
 // ------------------------------------------------------------- write paths
 
 const ordered: Stage[] = ['capture', 'understand', 'plan', 'check', 'approve', 'execute', 'verify', 'record', 'learn'];
@@ -200,6 +303,7 @@ export function createWorkItem(input: CreateWorkItemInput, actor: Actor): StageA
     applicable_policies: policies,
     risk_classification: template.risk_class,
     control_mode: input.control_mode,
+    execution_mode: input.execution_mode,
     proposed_plan: proposed,
     approvals: [],
     stage: 'capture',
@@ -225,7 +329,7 @@ export function createWorkItem(input: CreateWorkItemInput, actor: Actor): StageA
   return { ok: true, workitem: item };
 }
 
-export function updateWorkItem(id: string, actor: Actor, patch: { title?: string; objective?: string; control_mode?: ControlMode; accountable_owner?: string }): StageActionResult {
+export function updateWorkItem(id: string, actor: Actor, patch: { title?: string; objective?: string; control_mode?: ControlMode; execution_mode?: NonNullable<WorkItem['execution_mode']>; accountable_owner?: string }): StageActionResult {
   const db = loadDB();
   const item = db.workitems.find((i) => i.id === id);
   if (!item) return { ok: false, error: 'Work item not found' };
@@ -233,6 +337,10 @@ export function updateWorkItem(id: string, actor: Actor, patch: { title?: string
   if (patch.title) item.title = patch.title;
   if (patch.objective) item.objective = patch.objective;
   if (patch.accountable_owner) item.accountable_owner = patch.accountable_owner;
+  if (patch.execution_mode) {
+    item.execution_mode = patch.execution_mode;
+    item.control_mode = controlModeFor(patch.execution_mode, item);
+  }
   if (patch.control_mode && (isBefore(item.stage, 'approve') || item.stage === 'capture')) {
     item.control_mode = patch.control_mode;
     item.proposed_plan = item.proposed_plan.map((s) => ({ ...s, mode: patch.control_mode! }));

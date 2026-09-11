@@ -158,6 +158,7 @@ export interface WorkItem {
   applicable_policies: PolicyRef[];
   risk_classification: RiskClass;
   control_mode: ControlMode;
+  execution_mode?: import('@/lib/uiol/layer').ExecutionMode;
   proposed_plan: PlanStep[];
   approvals: Approval[];
   stage: Stage;
@@ -244,6 +245,7 @@ export interface CreateWorkItemInput {
   org_context: string;
   related_customer_case?: string;
   control_mode: ControlMode;
+  execution_mode?: import('@/lib/uiol/layer').ExecutionMode;
   requester_id?: string;
   additional_info?: string;
 }

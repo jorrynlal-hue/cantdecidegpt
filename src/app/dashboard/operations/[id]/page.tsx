@@ -4,12 +4,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, Bot, Check, Copy, FileCheck2, Flag, Loader2, Lock, Mic2,
-  RefreshCw, ScrollText, ShieldCheck, Sparkles, ThumbsUp, X,
+  RefreshCw, ScrollText, ShieldCheck, Sparkles, ThumbsUp, User, X,
 } from 'lucide-react';
-import { api, fmtDate, fmtTime, CURRENT_ACTOR, WorkItem, eventItem } from '@/lib/uiol/client';
+import { api, fmtDate, fmtTime, CURRENT_ACTOR, WorkItem, eventItem, ExecutionMode, DecisionReceipt } from '@/lib/uiol/client';
 import { ActorLabel, ControlModeBadge, RiskBadge, StageBadge } from '@/components/uiol/badges';
 import StageStepper from '@/components/uiol/stepper';
+import ExecutionControl from '@/components/uiol/executionControl';
+import DecisionReceiptCard from '@/components/uiol/decisionReceipt';
 import { STAGE_LABELS, Stage, ControlMode, FinalOutcome } from '@/lib/uiol/types';
+import { EXECUTION_MODE_LABELS } from '@/lib/uiol/layer';
 import { stageHelpText } from '@/lib/uiol/lifecycle';
 
 export default function WorkItemDetail() {
@@ -25,11 +28,20 @@ export default function WorkItemDetail() {
   const [verdict, setVerdict] = useState<Array<{ policy_id: string; decision: string; reason: string }> | null>(null);
   const [outcome, setOutcome] = useState<FinalOutcome>('success');
   const [followUps, setFollowUps] = useState('');
+  const [execMode, setExecMode] = useState<ExecutionMode>('auto');
+  const [receipt, setReceipt] = useState<DecisionReceipt | null>(null);
 
   const load = useCallback(async () => {
     const [wi, au] = await Promise.all([api.workitem(id), api.audit({ workitem_id: id, limit: 300 })]);
     setItem(wi.workitem);
     setAudit(au.events);
+    if (wi.workitem?.execution_mode) setExecMode(wi.workitem.execution_mode);
+    if (wi.workitem?.final_outcome !== 'in_progress') {
+      const rc = await api.receipt(id);
+      setReceipt(rc.receipt);
+    } else {
+      setReceipt(null);
+    }
     setLoading(false);
   }, [id]);
 
@@ -169,24 +181,44 @@ export default function WorkItemDetail() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Left column: stage actions */}
         <div className="space-y-4 lg:col-span-2">
-          {/* Control mode */}
-          <Panel title="Autonomy control mode" icon={<Lock className="h-4 w-4" />}>
-            <p className="mb-2 text-xs text-gray-500">Graduated autonomy. {canEditMode ? 'Editable before the approval stage.' : 'Locked after the approval stage begins.'}</p>
-            <div className="flex flex-wrap gap-2">
-              {(['human_only', 'ai_suggests', 'ai_prepares', 'human_approves', 'supervised', 'bounded_autonomy'] as ControlMode[]).map((m) => (
-                <button
-                  key={m}
-                  disabled={!canEditMode}
-                  onClick={async () => {
-                    await api.updateWorkitem(id, { control_mode: m }, CURRENT_ACTOR);
-                    setMsg({ kind: 'ok', text: 'Control mode updated.' });
-                    load();
-                  }}
-                  className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${item.control_mode === m ? 'border-purple-400/50 bg-purple-500/15 text-purple-300' : 'border-white/10 text-gray-400 hover:bg-white/5'} ${!canEditMode ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
-                >
-                  {m.replace('_', ' ')}
-                </button>
-              ))}
+          {/* Execution Control */}
+          <Panel title="Execution Control — who does the work?" icon={<Lock className="h-4 w-4" />}>
+            <p className="mb-2 text-xs text-gray-500">
+              {canEditMode ? 'Choose who runs this job — AI, a human, or both. Auto (★) lets the system decide per step.' : 'Locked after the approval stage begins.'}
+            </p>
+            <ExecutionControl
+              value={execMode}
+              disabled={!canEditMode}
+              showRecommended
+              onChange={async (m) => {
+                setExecMode(m);
+                try {
+                  await api.updateWorkitem(id, { execution_mode: m }, CURRENT_ACTOR);
+                  setMsg({ kind: 'ok', text: `Execution mode set to ${m}. Control dial updated.` });
+                  load();
+                } catch (e) {
+                  setMsg({ kind: 'err', text: (e as Error).message });
+                }
+              }}
+            />
+            <div className="mt-3">
+              <p className="mb-1.5 text-[10px] uppercase tracking-wider text-gray-500">Underlying control dial</p>
+              <div className="flex flex-wrap gap-2">
+                {(['human_only', 'ai_suggests', 'ai_prepares', 'human_approves', 'supervised', 'bounded_autonomy'] as ControlMode[]).map((m) => (
+                  <button
+                    key={m}
+                    disabled={!canEditMode}
+                    onClick={async () => {
+                      await api.updateWorkitem(id, { control_mode: m }, CURRENT_ACTOR);
+                      setMsg({ kind: 'ok', text: 'Control mode updated.' });
+                      load();
+                    }}
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${item.control_mode === m ? 'border-purple-400/50 bg-purple-500/15 text-purple-300' : 'border-white/10 text-gray-400 hover:bg-white/5'} ${!canEditMode ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                  >
+                    {m.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
             </div>
           </Panel>
 
@@ -308,6 +340,40 @@ export default function WorkItemDetail() {
                 <div className="space-y-2">
                   <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Execution note (optional) — e.g., 'Idempotency key IP-2026-01 applied'." className="w-full resize-none rounded-lg border border-white/10 bg-[#0d0d12] px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-purple-500/50" rows={2} />
                   <ActionBtn onClick={() => act('execute', 'execute-plan', { note })} label="Execute validated plan (draft mode)" sub="Runs inside the control plane with idempotency + policy checks. Every step recorded." icon={<Bot className="h-4 w-4" />} />
+                  <div className={`grid gap-2 ${item.control_mode === 'human_only' ? 'sm:grid-cols-1' : 'sm:grid-cols-2'}`}>
+                    {item.control_mode !== 'human_only' && (
+                      <ActionBtn
+                        onClick={async () => {
+                          try {
+                            await api.takeover(id, CURRENT_ACTOR);
+                            setMsg({ kind: 'ok', text: 'You now control this work item. AI becomes your assistant.' });
+                            load();
+                          } catch (e) {
+                            setMsg({ kind: 'err', text: (e as Error).message });
+                          }
+                        }}
+                        label="Take over this work"
+                        sub="Human takes control now. Context, plan and evidence stay with you."
+                        icon={<User className="h-4 w-4" />}
+                      />
+                    )}
+                    {item.control_mode === 'human_only' && (
+                      <ActionBtn
+                        onClick={async () => {
+                          try {
+                            await api.giveback(id, execMode, CURRENT_ACTOR);
+                            setMsg({ kind: 'ok', text: `AI re-engaged under ${execMode}.` });
+                            load();
+                          } catch (e) {
+                            setMsg({ kind: 'err', text: (e as Error).message });
+                          }
+                        }}
+                        label="Give this back to AI"
+                        sub={`AI takes over again under ${execMode === 'auto' ? 'Auto' : EXECUTION_MODE_LABELS[execMode]}.`}
+                        icon={<Bot className="h-4 w-4" />}
+                      />
+                    )}
+                  </div>
                 </div>
               )}
               {item.stage === 'verify' && (
@@ -346,8 +412,10 @@ export default function WorkItemDetail() {
           </Panel>
         </div>
 
-        {/* Right column: evidence + audit */}
+        {/* Right column: receipt + evidence + audit */}
         <div className="space-y-4">
+          {receipt && <DecisionReceiptCard receipt={receipt} />}
+
           <Panel title="Evidence" icon={<Mic2 className="h-4 w-4" />} action={
             <button onClick={copyEvidence} className="inline-flex items-center gap-1 text-[11px] text-gray-400 hover:text-white"><Copy className="h-3.5 w-3.5" /> Export</button>
           }>

@@ -169,7 +169,7 @@ export default function Home() {
           >
             <span className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary-light">
               <Zap className="h-4 w-4" />
-              The Generative Human Workspace
+              The Work Network
             </span>
           </motion.div>
 
@@ -179,7 +179,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
             className="text-gradient text-5xl font-bold leading-tight tracking-tight sm:text-6xl md:text-7xl"
           >
-            High-Tech AI. Fully Human.
+            Tell us what you want done.
           </motion.h1>
 
           <motion.p
@@ -188,9 +188,18 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
             className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl"
           >
-            Not another box of AI tools — a living operating system where humans
-            and AI co-work. Human integrations, generative insights and 55
-            tools, all in one place.
+            We'll connect the right people, AI, tools and businesses to get it
+            done — in one workspace.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+            className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted/80 sm:text-base"
+          >
+            Human when humanity matters. AI when intelligence can scale. Both when
+            the work needs the best of each.
           </motion.p>
 
           <motion.div
@@ -241,12 +250,13 @@ export default function Home() {
             <p className="text-sm font-semibold uppercase tracking-widest text-primary-light">
               Features
             </p>
-            <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-              Every AI Tool. One Platform.
-            </h2>
+<h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
+                People · Businesses · AI · Services
+              </h2>
             <p className="mt-4 text-lg text-muted">
-              Stop juggling a dozen apps. Can't Decide GPT brings the full power of AI
-              into a single, seamless workspace.
+              A universal network where work gets done. Every capability — code,
+              design, writing, analysis, voice — can be delivered by AI, a human,
+              or a hybrid team.
             </p>
           </Reveal>
 
