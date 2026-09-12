@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { HUB_TOOLS, RESTORED_TOOLS, ZONE_LABELS, ALL_TOOLS, assertHub, assertAllTools, hubTotal, type HubTool, type RestoredTool } from '@/lib/hub';
 import { collection } from '@/lib/core/client';
+import { createRecognition, matchVoiceNav, voiceSupported, type SpeechRecognitionLike } from '@/lib/voice';
 
 const ICONS: Record<string, LucideIcon> = {
   Waypoints, Gauge, ShieldCheck, KeyRound, Settings, Users, BrainCircuit,
@@ -165,45 +166,13 @@ function sampleSparkline(rows: Row[]): number[] {
   return buckets;
 }
 
-interface VoiceCommand {
-  match: (t: string) => string | null;
-  href: string;
-}
-
-const VOICE_ROUTES: VoiceCommand[] = [
-  { match: (t) => (/^(go to )?command( center)?/.test(t) || /dashboard/.test(t) ? 'command' : null), href: '/dashboard' },
-  { match: (t) => (/calendar|schedule|my week/.test(t) ? 'calendar' : null), href: '/dashboard/calendar' },
-  { match: (t) => (/approval/.test(t) ? 'approvals' : null), href: '/dashboard/operations/approvals' },
-  { match: (t) => (/plans|billing|upgrade/.test(t) ? 'plans' : null), href: '/dashboard/plans' },
-  { match: (t) => (/setting/.test(t) ? 'settings' : null), href: '/dashboard/settings' },
-  { match: (t) => /team|people|members/.test(t) ? 'team' : null, href: '/dashboard/team' },
-  { match: (t) => /security|permission/.test(t) ? 'security' : null, href: '/dashboard/security' },
-  { match: (t) => /finance|money|revenue/.test(t) ? 'finance' : null, href: '/dashboard/finance' },
-  { match: (t) => /marketing|campaign/.test(t) ? 'marketing' : null, href: '/dashboard/marketing' },
-  { match: (t) => /automation|workflow/.test(t) ? 'automation' : null, href: '/dashboard/automation' },
-  { match: (t) => /inbox|email|emails/.test(t) ? 'inbox' : null, href: '/dashboard/inbox' },
-];
-
-type SRConstructor = new () => SpeechRecognitionLike;
-interface SpeechRecognitionLike {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onend: (() => void) | null;
-  onerror: ((e: { error: string }) => void) | null;
-  start: () => void;
-  stop: () => void;
-}
-
 function VoiceButton() {
   const router = useRouter();
   const [listening, setListening] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [goto, setGoto] = useState<{ label: string; href: string } | null>(null);
   const recRef = useRef<SpeechRecognitionLike | null>(null);
-  const win = (typeof window !== 'undefined' ? window : undefined) as (Window & { webkitSpeechRecognition?: SRConstructor; SpeechRecognition?: SRConstructor }) | undefined;
-  const supported = Boolean(win?.webkitSpeechRecognition || win?.SpeechRecognition);
+  const supported = voiceSupported();
 
   const stop = () => {
     try { recRef.current?.stop(); } catch { /* noop */ }
@@ -212,31 +181,19 @@ function VoiceButton() {
   };
 
   const start = () => {
-    const Ctor = win?.webkitSpeechRecognition ?? win?.SpeechRecognition;
-    if (!Ctor) {
+    const rec = createRecognition({ continuous: false, interimResults: false });
+    if (!rec) {
       setMsg('Voice is not supported in this browser. Use Chrome or Edge.');
       return;
     }
-    const rec = new Ctor();
-    rec.lang = 'en-US';
-    rec.continuous = false;
-    rec.interimResults = false;
     rec.onresult = (e) => {
       const transcript = e.results?.[0]?.[0]?.transcript?.trim() ?? '';
       if (!transcript) return;
-      const t = transcript.toLowerCase().replace(/^(go to|open|take me to|navigate to|show me|show)\s+/, '').replace(/^the\s+/, '').trim();
-      const special = VOICE_ROUTES.find((r) => r.match(t));
-      if (special) {
-        setMsg(`Heard: "${transcript}" → opening ${special.href}`);
-        setGoto({ label: special.href === '/dashboard' ? 'Command Center' : special.href, href: special.href });
-        window.setTimeout(() => router.push(special.href), 350);
-        return;
-      }
-      const tool = ALL_TOOLS.find((x) => x.name.toLowerCase() === t || x.id === t || t.includes(x.name.toLowerCase()));
-      if (tool) {
-        setMsg(`Heard: "${transcript}" → opening ${tool.name}`);
-        setGoto({ label: tool.name, href: tool.href });
-        window.setTimeout(() => router.push(tool.href), 350);
+      const nav = matchVoiceNav(transcript);
+      if (nav) {
+        setMsg(`Heard: "${transcript}" → opening ${nav.label}`);
+        setGoto({ label: nav.label, href: nav.href });
+        window.setTimeout(() => router.push(nav.href), 350);
         return;
       }
       setMsg(`Heard: "${transcript}" — I could not find that tool. Try a name like "Executive" or "Marketing".`);

@@ -7,6 +7,7 @@ import Sidebar from './Sidebar';
 import Header from '../platform/Header';
 import StatusBar from './StatusBar';
 import AttentionAlerts from '../platform/AttentionAlerts';
+import VoiceSystem from '../platform/VoiceSystem';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -43,6 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </motion.div>
 
       <AttentionAlerts />
+      <VoiceSystem />
     </div>
   );
 }

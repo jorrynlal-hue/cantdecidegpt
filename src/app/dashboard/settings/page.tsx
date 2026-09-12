@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Monitor, Palette, User as UserIcon, LogOut, KeyRound, Trash2, Volume2, BellRing, Moon } from 'lucide-react';
+import { Monitor, Palette, User as UserIcon, LogOut, KeyRound, Trash2, Volume2, BellRing, Moon, Mic } from 'lucide-react';
 import { Card, CardHeader, Badge, Btn, Input, Field, Spinner } from '@/components/platform/ui';
 import { useSession } from '@/components/platform/SessionProvider';
-import { loadAudioPrefs, saveAudioPrefs, playTing, DEFAULT_AUDIO_PREFS, type AudioPrefs } from '@/lib/ting';
+import { loadAudioPrefs, saveAudioPrefs, playTing, DEFAULT_AUDIO_PREFS, DEFAULT_WAKE_WORD, type AudioPrefs } from '@/lib/ting';
+import { speak } from '@/lib/voice';
 
 const roleTone = (r: string) => (r === 'owner' || r === 'admin' ? 'red' : r === 'manager' ? 'amber' : r === 'member' ? 'blue' : 'gray') as 'red' | 'amber' | 'blue' | 'gray';
 
@@ -36,6 +37,10 @@ export default function SettingsPage() {
   };
 
   const testSound = () => playTing({ volume: audio.volume });
+
+  const testVoice = () => {
+    speak('This is your Nexus voice. Say the wake word, then a command like, open tasks.', { volume: audio.volume, force: true });
+  };
 
   const askBrowser = async () => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
@@ -207,9 +212,37 @@ export default function SettingsPage() {
               <Btn small onClick={askBrowser} disabled={notifState === 'denied' || notifState === 'unsupported'}>Enable</Btn>
             </div>
           </div>
+
+          <div className="flex items-center gap-2">
+            <Mic className="w-4 h-4 text-[#FF5A91]" />
+            <span className="text-sm text-gray-300">Voice assistant</span>
+            <button
+              onClick={() => setPref({ voiceEnabled: !audio.voiceEnabled })}
+              className={`relative ml-auto h-6 w-11 rounded-full transition-colors ${audio.voiceEnabled ? 'bg-[#FF5A91]/70' : 'bg-white/10'}`}
+              aria-label="Toggle voice assistant"
+            >
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${audio.voiceEnabled ? 'left-[22px]' : 'left-0.5'}`} />
+            </button>
+            <Badge tone={audio.voiceEnabled ? 'purple' : 'gray'}>{audio.voiceEnabled ? 'on' : 'off'}</Badge>
+          </div>
+          {audio.voiceEnabled && (
+            <div className="pl-7 space-y-3">
+              <Field label="Wake word">
+                <Input value={audio.wakeWord} onChange={(v) => setPref({ wakeWord: v })} placeholder={DEFAULT_WAKE_WORD} />
+              </Field>
+              <div className="flex items-center gap-2">
+                <Btn small onClick={testVoice}>Test voice</Btn>
+                <span className="text-[10px] text-gray-500">Replies are spoken with the system browser voice.</span>
+              </div>
+            </div>
+          )}
+          <p className="text-[10px] text-gray-600">
+            Hands-free on this browser: say the wake word, then a command like &quot;open tasks&quot; or &quot;create a task&quot;.
+            Commands route to the assistant and reply by voice. Needs Chrome/Edge. Toggle with Ctrl+Shift+V.
+          </p>
           <p className="text-[10px] text-gray-600">
             Saved to this browser. The amber visual alert stays visible even when the sound is muted.
-            Browsers require a first interaction before any sound can play — that is enforced here too.
+            Sound only plays after you interact with the page and never inside quiet hours.
           </p>
         </div>
       </Card>

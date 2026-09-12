@@ -9,9 +9,12 @@ export interface AudioPrefs {
   quietFrom: string; // "HH:MM"
   quietTo: string; // "HH:MM"
   browserNotify: boolean;
+  voiceEnabled: boolean;
+  wakeWord: string;
 }
 
 export const AUDIO_PREFS_KEY = 'cdg.audio-prefs';
+export const DEFAULT_WAKE_WORD = 'hey nexus';
 
 export const DEFAULT_AUDIO_PREFS: AudioPrefs = {
   enabled: true,
@@ -20,6 +23,8 @@ export const DEFAULT_AUDIO_PREFS: AudioPrefs = {
   quietFrom: '22:00',
   quietTo: '08:00',
   browserNotify: false,
+  voiceEnabled: false,
+  wakeWord: DEFAULT_WAKE_WORD,
 };
 
 let audioCtx: AudioContext | null = null;
@@ -77,6 +82,8 @@ export function loadAudioPrefs(): AudioPrefs {
         quietFrom: typeof d.quietFrom === 'string' ? d.quietFrom : base.quietFrom,
         quietTo: typeof d.quietTo === 'string' ? d.quietTo : base.quietTo,
         browserNotify: typeof d.browserNotify === 'boolean' ? d.browserNotify : base.browserNotify,
+        voiceEnabled: typeof d.voiceEnabled === 'boolean' ? d.voiceEnabled : base.voiceEnabled,
+        wakeWord: typeof d.wakeWord === 'string' && d.wakeWord.trim() ? d.wakeWord.slice(0, 40) : base.wakeWord,
       };
     }
   } catch { /* defaults */ }
