@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Trash2, Play, ChevronDown, ChevronRight } from 'lucide-react';
-import { Card, CardHeader, Badge, Btn, Input, Textarea, Select, Field, Empty, Spinner, fmtDateTime } from '@/components/platform/ui';
+import { Card, CardHeader, Badge, Btn, Input, Select, Field, Empty, Spinner, fmtDateTime } from '@/components/platform/ui';
 import { useCollection } from '@/components/platform/data';
 import { collection } from '@/lib/core/client';
 
@@ -25,7 +25,7 @@ interface StepUi {
 }
 
 interface WorkflowRow { id: string; name: string; description?: string; enabled: boolean; trigger: { type: string; schedule?: string; filter?: Record<string, string> }; steps: { id: string; kind: string; action?: string; params?: Record<string, unknown>; condition?: { field: string; op: string; value: string }; delaySec?: number; approved?: boolean }[]; createdAt: string; }
-interface Execution { id: string; workflowName: string; status: string; triggerType: string; startedAt: string; finishedAt?: string; error?: string; }
+interface Execution { id: string; workflowName: string; status: string; triggerType: string; startedAt: string; finishedAt?: string; error?: string; dryRun?: boolean; verified?: boolean; }
 
 const ACTIONS = ['create_task', 'update_task', 'complete_task', 'delete_task', 'create_project', 'create_customer', 'create_deal', 'move_deal', 'create_campaign', 'create_post', 'publish_post', 'send_email', 'create_document', 'search_documents', 'create_knowledge', 'save_content', 'generate_content', 'generate_image', 'record_transaction', 'create_invoice', 'mark_invoice_paid', 'create_event', 'create_workflow', 'request_approval', 'get_analytics', 'search', 'notify_team'];
 const TRIGGERS = ['manual', 'scheduled_time', 'new_task', 'completed_task', 'new_customer', 'new_lead', 'new_document', 'webhook'];
@@ -110,20 +110,34 @@ export default function AutomationPage() {
     }
   };
 
-  const runNow = async (id: string) => {
+  const runNow = async (id: string, dryRun = false) => {
     setBusy(true);
     try {
       const res = await fetch('/api/automation/run', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workflowId: id }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workflowId: id, dryRun }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d?.error ?? 'Run failed');
-      alert(`Execution started. ${d?.execution ? 'Status: ' + (d.execution.status ?? 'queued') : ''}`);
+      if (dryRun) {
+        const n = d?.execution?.results?.length ?? 0;
+        alert(`Dry run complete — ${n} simulated step(s), no side effects. Approve or adjust, then run for real.`);
+      } else {
+        alert(`Execution started. ${d?.execution ? 'Status: ' + (d.execution.status ?? 'queued') : ''}`);
+      }
       executions.reload();
     } catch (e) {
       alert((e as Error).message);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const verifyRun = async (id: string) => {
+    try {
+      await collection.update('executions', id, { op: 'verify' });
+      executions.reload();
+    } catch (e) {
+      alert((e as Error).message);
     }
   };
 
@@ -168,22 +182,28 @@ export default function AutomationPage() {
                 <div className="flex items-center gap-2">
                   <Badge tone={w.enabled ? 'green' : 'gray'}>{w.enabled ? 'enabled' : 'disabled'}</Badge>
                   <Btn kind="outline" small onClick={() => runNow(w.id)} disabled={busy}><Play className="w-3 h-3" /> Run now</Btn>
+                  <Btn kind="ghost" small onClick={() => runNow(w.id, true)} disabled={busy}>Dry run</Btn>
                   <button onClick={() => toggleEnabled(w)} className="px-2 py-1.5 rounded-md border border-white/10 text-xs text-gray-300 hover:text-white hover:border-white/30">{w.enabled ? 'Disable' : 'Enable'}</button>
                   <button onClick={() => del(w.id)} className="p-1.5 rounded-md text-gray-600 hover:text-rose-400"><Trash2 className="w-3.5 h-3.5" /></button>
                   <button onClick={() => setOpenId(openId === w.id ? null : w.id)} className="p-1.5 rounded-md text-gray-600 hover:text-white">{openId === w.id ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</button>
                 </div>
               </div>
               {openId === w.id && (
-                <ol className="mt-3 space-y-1.5 border-l border-white/10 ml-2 pl-4">
-                  {w.steps.map((s, i) => (
-                    <li key={s.id} className="text-xs">
-                      <span className="text-purple-300 font-medium">Step {i + 1} · {s.kind}</span>{' '}
-                      <span className="text-gray-400">
-                        {s.kind === 'action' ? `${s.action}${s.approved ? ' (requires approval)' : ''} ${s.params ? JSON.stringify(s.params) : ''}` : s.kind === 'delay' ? `${s.delaySec}s` : s.kind === 'condition' ? `${s.condition?.field} ${s.condition?.op} ${s.condition?.value}` : String(s.params?.output ?? '')}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
+                <>
+                  <div className="mt-3 rounded-lg border border-purple-500/20 bg-purple-500/5 px-3 py-2 text-[11px] text-gray-300">
+                    <span className="text-purple-300 font-medium">Plan preview</span> — {w.steps.filter((s) => s.kind === 'action').length} action(s), {w.steps.filter((s) => s.approved).length} require human approval, {w.steps.filter((s) => s.kind === 'delay').length} delay(s). Estimate: ~$0 + connector costs. Always dry-run before a real run.
+                  </div>
+                  <ol className="mt-3 space-y-1.5 border-l border-white/10 ml-2 pl-4">
+                    {w.steps.map((s, i) => (
+                      <li key={s.id} className="text-xs">
+                        <span className="text-purple-300 font-medium">Step {i + 1} · {s.kind}</span>{' '}
+                        <span className="text-gray-400">
+                          {s.kind === 'action' ? `${s.action}${s.approved ? ' (requires approval)' : ''} ${s.params ? JSON.stringify(s.params) : ''}` : s.kind === 'delay' ? `${s.delaySec}s` : s.kind === 'condition' ? `${s.condition?.field} ${s.condition?.op} ${s.condition?.value}` : String(s.params?.output ?? '')}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </>
               )}
             </Card>
           ))}
@@ -204,15 +224,19 @@ export default function AutomationPage() {
                   <th className="px-4 py-2 text-left text-[10px] uppercase tracking-wider text-gray-500">Status</th>
                   <th className="px-4 py-2 text-left text-[10px] uppercase tracking-wider text-gray-500">Started</th>
                   <th className="px-4 py-2 text-left text-[10px] uppercase tracking-wider text-gray-500">Finished</th>
+                  <th className="px-4 py-2 text-left text-[10px] uppercase tracking-wider text-gray-500">Verify</th>
                 </tr></thead>
                 <tbody className="divide-y divide-white/5">
                   {executions.rows.map((e) => (
                     <tr key={e.id} className="hover:bg-white/5">
                       <td className="px-4 py-2.5 text-sm text-white">{e.workflowName}</td>
                       <td className="px-4 py-2.5 text-xs text-gray-500">{e.triggerType}</td>
-                      <td className="px-4 py-2.5"><Badge tone={exTone(e.status)}>{e.status}</Badge></td>
+                      <td className="px-4 py-2.5"><Badge tone={exTone(e.status)}>{e.status}{e.dryRun ? ' · dry-run' : ''}</Badge></td>
                       <td className="px-4 py-2.5 text-xs text-gray-500">{fmtDateTime(e.startedAt)}</td>
                       <td className="px-4 py-2.5 text-xs text-gray-500">{fmtDateTime(e.finishedAt)}</td>
+                      <td className="px-4 py-2.5">
+                        {e.verified ? <Badge tone="green">verified</Badge> : e.status === 'completed' ? <Btn kind="solid" small onClick={() => verifyRun(e.id)}>Verify</Btn> : <span className="text-xs text-gray-600">—</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

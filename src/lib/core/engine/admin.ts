@@ -49,6 +49,98 @@ function notifyIntegration(ctx: Ctx, db: DB, i: Integration, title: string): voi
   notifyWorkspace(ctx, db, { title, kind: 'integration', link: '/integrations' });
 }
 
+// Universal connectors: API, OAuth, MCP, webhooks and browser workers all live
+// in the same registry entry so any capability becomes a usable tool.
+const CONNECTOR_CATEGORY: Record<string, Integration['category']> = {
+  api: 'dev',
+  mcp: 'dev',
+  webhook: 'dev',
+  browser: 'external',
+  oauth: 'external',
+};
+
+export function createIntegration(ctx: Ctx, db: DB, input: {
+  name: string;
+  kind?: Integration['kind'];
+  category?: Integration['category'];
+  provider?: string;
+  domain?: string;
+  endpoint?: string;
+  scopes?: string[];
+  settings?: Record<string, unknown>;
+}): Integration {
+  requireRole(ctx, 'manager');
+  const kind = (input.kind ?? 'api') as Exclude<Integration['kind'], undefined>;
+  const i: Integration = {
+    id: uid(),
+    workspaceId: ctx.workspaceId,
+    category: input.category ?? (CONNECTOR_CATEGORY[kind] ?? 'external'),
+    name: nonEmpty(input.name, 'name'),
+    key: `${kind}.${input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+    connected: false,
+    status: 'disconnected',
+    permissions: input.scopes ?? [],
+    settings: input.settings ?? {},
+    kind,
+    provider: optStr(input.provider),
+    domain: optStr(input.domain),
+    endpoint: optStr(input.endpoint),
+    health: 'unknown',
+    updatedAt: now(),
+  };
+  db.integrations.push(i);
+  logActivity(ctx, db, { action: 'integration.create', result: `Added connector "${i.name}" (${kind})`, objectType: 'integration', objectId: i.id, objectLabel: i.name });
+  persist(db);
+  return i;
+}
+
+export function updateIntegration(ctx: Ctx, db: DB, id: string, patch: {
+  name?: string;
+  kind?: Integration['kind'];
+  provider?: string;
+  domain?: string;
+  endpoint?: string;
+  scopes?: string[];
+  settings?: Record<string, unknown>;
+  status?: Integration['status'];
+  health?: Integration['health'];
+}): Integration {
+  requireRole(ctx, 'manager');
+  const i = getIntegration(db, ctx.workspaceId, id);
+  if (patch.name !== undefined) i.name = nonEmpty(patch.name, 'name');
+  if (patch.kind !== undefined) i.kind = patch.kind;
+  if (patch.provider !== undefined) i.provider = optStr(patch.provider);
+  if (patch.domain !== undefined) i.domain = optStr(patch.domain);
+  if (patch.endpoint !== undefined) i.endpoint = optStr(patch.endpoint);
+  if (patch.scopes !== undefined) i.permissions = [...new Set(patch.scopes)];
+  if (patch.settings !== undefined) i.settings = { ...i.settings, ...patch.settings };
+  if (patch.status !== undefined) i.status = patch.status;
+  if (patch.health !== undefined) i.health = patch.health;
+  i.updatedAt = now();
+  persist(db);
+  return i;
+}
+
+// Honest connector test: without a real external handshake there is no way to
+// verify a live service, so "testing" validates the connector definition is
+// complete and labels the result accordingly.
+export function testIntegration(ctx: Ctx, db: DB, id: string): Integration {
+  requireRole(ctx, 'manager');
+  const i = getIntegration(db, ctx.workspaceId, id);
+  const isBrowse = i.kind === 'browser';
+  const hasEndpoint = i.kind !== 'api' || Boolean(i.endpoint);
+  const hasDomain = !isBrowse || Boolean(i.domain);
+  const healthy = isBrowse ? hasDomain : hasEndpoint;
+  i.status = healthy ? 'connected' : 'error';
+  i.health = healthy ? 'ok' : 'down';
+  i.error = healthy ? undefined : 'Missing required configuration (endpoint or allowed domain).';
+  i.lastTestedAt = now();
+  i.updatedAt = now();
+  logActivity(ctx, db, { action: 'integration.test', result: `Tested connector "${i.name}": ${i.status}${i.error ? ` (${i.error})` : ''}`, objectType: 'integration', objectId: i.id, objectLabel: i.name });
+  persist(db);
+  return i;
+}
+
 // ---------- provider configs ----------
 
 export interface ProviderCatalog {

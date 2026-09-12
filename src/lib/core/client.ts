@@ -60,8 +60,8 @@ export const ai = {
 };
 
 export const automation = {
-  run: (workflowId: string, payload?: Record<string, unknown>) =>
-    request<{ execution: unknown }>('/api/automation/run', 'POST', { workflowId, payload }),
+  run: (workflowId: string, payload?: Record<string, unknown>, dryRun?: boolean) =>
+    request<{ execution: unknown }>('/api/automation/run', 'POST', { workflowId, payload, dryRun }),
 };
 
 export const approvals = {
@@ -70,6 +70,18 @@ export const approvals = {
 
 export const notifications = {
   readAll: (id?: string) => request<{ markedRead?: number; notification?: unknown }>(`/api/notifications/read-all${id ? `?id=${id}` : ''}`, 'POST'),
+};
+
+export interface BackupRow {
+  id?: string;
+  version: number;
+  message: string | null;
+  created_at: string;
+}
+
+export const backups = {
+  list: () => request<BackupRow[]>('/api/backups', 'GET'),
+  restore: (backupId?: string) => request<{ restored: boolean; version: number; at: string; sessionsPreserved: number }>('/api/backups/restore', 'POST', backupId ? { backupId } : {}),
 };
 
 export const analytics = {
@@ -95,6 +107,22 @@ export const uploads = {
 export const integrations = {
   connect: (id: string, settings?: Record<string, unknown>) => request<{ integration: unknown }>(`/api/integrations/${id}/connect`, 'POST', { settings }),
   disconnect: (id: string) => request<{ integration: unknown }>(`/api/integrations/${id}/disconnect`, 'POST'),
+  test: (id: string) => request<{ integration: unknown }>(`/api/db/integrations/${id}`, 'PATCH', { op: 'test' }),
+};
+
+export const vault = {
+  list: () => collection.list('credentials') as Promise<unknown[]>,
+  add: (input: { name: string; kind: string; provider?: string; secret?: string; scopes?: string[]; agentIds?: string[]; expiresAt?: string }) =>
+    collection.create('credentials', input) as Promise<unknown>,
+  update: (id: string, patch: Record<string, unknown>) => collection.update('credentials', id, patch) as Promise<unknown>,
+  remove: (id: string) => collection.remove('credentials', id) as Promise<unknown>,
+};
+
+export const registry = {
+  list: (q?: string) => collection.list('tools', q ? { q } : {}) as Promise<unknown[]>,
+  add: (input: Record<string, unknown>) => collection.create('tools', input) as Promise<unknown>,
+  update: (id: string, patch: Record<string, unknown>) => collection.update('tools', id, patch) as Promise<unknown>,
+  remove: (id: string) => collection.remove('tools', id) as Promise<unknown>,
 };
 
 export const appearance = {

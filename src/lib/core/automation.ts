@@ -153,10 +153,75 @@ export function startExecution(ctx: Ctx, db: DB, wf: Workflow, trigger: string, 
   return exec;
 }
 
-export function runWorkflow(ctx: Ctx, db: DB, workflowId: string, payload: Record<string, unknown> = {}): Execution {
+export function runWorkflow(ctx: Ctx, db: DB, workflowId: string, payload: Record<string, unknown> = {}, dryRun = false): Execution {
   const wf = db.workflows.find((w) => w.id === workflowId && w.workspaceId === ctx.workspaceId);
   if (!wf) throw Error('NOT_FOUND');
+  if (dryRun) return startDryRun(ctx, db, wf, payload);
   return startExecution(ctx, db, wf, 'manual', payload);
+}
+
+export function verifyExecution(db: DB, workspaceId: string, executionId: string): Execution {
+  const exec = db.executions.find((e) => e.id === executionId && e.workspaceId === workspaceId);
+  if (!exec) throw Error('NOT_FOUND');
+  exec.verified = true;
+  persist(db);
+  return exec;
+}
+
+// -- dry run: simulate every step but never produce side effects ------------
+
+function startDryRun(ctx: Ctx, db: DB, wf: Workflow, payload: Record<string, unknown>): Execution {
+  const exec: Execution = {
+    id: uid(),
+    workspaceId: ctx.workspaceId,
+    workflowId: wf.id,
+    trigger: 'manual',
+    payload,
+    status: 'running',
+    startedAt: now(),
+    stepIndex: 0,
+    results: [],
+    createdBy: ctx.user.id,
+    dryRun: true,
+  };
+  db.executions.push(exec);
+  persist(db);
+  advanceDryRun(ctx, db, exec, wf);
+  return exec;
+}
+
+function advanceDryRun(ctx: Ctx, db: DB, exec: Execution, wf: Workflow): void {
+  while (exec.stepIndex < wf.steps.length) {
+    const step = wf.steps[exec.stepIndex];
+    exec.stepIndex += 1;
+    if (step.kind === 'condition') {
+      const ok = evalCondition(step.condition, exec.payload);
+      exec.results.push({ stepId: step.id, action: 'condition', output: ok ? 'Condition met' : 'Condition not met', at: now() });
+      if (!ok) break;
+      continue;
+    }
+    if (step.kind === 'result') {
+      exec.results.push({ stepId: step.id, action: 'result', output: String(step.params?.output ?? ''), at: now() });
+      continue;
+    }
+    if (step.kind === 'delay') {
+      exec.results.push({ stepId: step.id, action: 'delay', output: `[dry-run] Would wait ${step.delaySec}s`, at: now() });
+      continue;
+    }
+    if (step.kind === 'action' && step.action) {
+      const note = step.approved ? ' [requires approval — would pause for human sign-off]' : '';
+      exec.results.push({
+        stepId: step.id,
+        action: step.action,
+        output: `[dry-run] Would run "${step.action}"${note} with no side effects`,
+        at: now(),
+      });
+      continue;
+    }
+  }
+  exec.status = 'completed';
+  exec.endedAt = now();
+  persist(db);
 }
 
 export function cancelExecution(ctx: Ctx, db: DB, executionId: string): Execution {

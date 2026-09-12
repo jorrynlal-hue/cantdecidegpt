@@ -40,6 +40,8 @@ import {
   Briefcase,
   Zap,
   Cpu,
+  Airplay,
+  SlidersHorizontal,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -55,6 +57,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     label: 'Home',
     items: [
       { label: 'What are we doing today?', href: '/dashboard/command', icon: Zap },
+      { label: 'Mission Control', href: '/dashboard/missioncontrol', icon: Airplay, prefix: '/dashboard/missioncontrol' },
       { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
       { label: 'Tasks & Projects', href: '/dashboard/work', icon: ListChecks, prefix: '/dashboard/work' },
       { label: 'Calendar', href: '/dashboard/calendar', icon: Calendar, prefix: '/dashboard/calendar' },
@@ -108,6 +111,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
       { label: 'Voice-to-Text', href: '/dashboard/voice', icon: Mic, prefix: '/dashboard/voice' },
       { label: 'Documents', href: '/dashboard/docs', icon: FileText, prefix: '/dashboard/docs' },
       { label: 'Integrations', href: '/dashboard/integrations', icon: Plug, prefix: '/dashboard/integrations' },
+      { label: 'Control Center', href: '/dashboard/control', icon: SlidersHorizontal, prefix: '/dashboard/control' },
       { label: 'Notifications', href: '/dashboard/notifications', icon: Bell, prefix: '/dashboard/notifications' },
     ],
   },

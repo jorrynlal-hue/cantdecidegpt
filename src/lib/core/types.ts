@@ -375,6 +375,8 @@ export interface Execution {
   approvedStepId?: string; // step just approved, to run on resume
   results: ExecutionResult[];
   createdBy: string;
+  dryRun?: boolean; // simulated run — no side effects
+  verified?: boolean; // human-verified completion
 }
 
 export interface Conversation {
@@ -458,6 +460,13 @@ export interface Integration {
   credentialsRef?: string; // server-side secret reference, never the secret itself
   connectedAt?: string;
   updatedAt: string;
+  // universal connector fields (Control Center)
+  kind?: 'api' | 'browser' | 'mcp' | 'webhook' | 'oauth';
+  provider?: string;
+  domain?: string; // browser workers: allowed websites
+  endpoint?: string; // API/MCP endpoint
+  health?: 'ok' | 'degraded' | 'down' | 'unknown';
+  lastTestedAt?: string;
 }
 
 export interface ProviderConfig {
@@ -467,6 +476,50 @@ export interface ProviderConfig {
   provider: string;
   enabled: boolean;
   settings: Record<string, unknown>; // never secrets
+}
+
+// Credential Vault entries. Raw secrets are never stored in the DB — only a
+// masked hint (e.g. the last 4 chars) so the item can be identified and reused.
+export type CredentialKind = 'oauth' | 'apikey' | 'token' | 'browser' | 'service';
+export type CredentialStatus = 'active' | 'expired' | 'revoked';
+
+export interface Credential {
+  id: string;
+  workspaceId: string;
+  name: string;
+  kind: CredentialKind;
+  provider: string;
+  masked: string; // hint only, never the secret
+  scopes: string[];
+  agentIds: string[]; // which agents may use it (empty = all agents)
+  status: CredentialStatus;
+  expiresAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Tool Registry. Every connected capability can become a tool with declared
+// inputs, risk, cost and access so the platform can plan execution safely.
+export type ToolRisk = 'low' | 'medium' | 'high';
+
+export interface Tool {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string;
+  capability: string;
+  inputs: string[];
+  permission: string;
+  auth: string;
+  risk: ToolRisk;
+  cost: string;
+  availability: string;
+  owner: string;
+  agentAccess: boolean;
+  humanAccess: boolean;
+  usageCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserSettings {
@@ -512,6 +565,8 @@ export interface DB {
   approvals: ApprovalItem[];
   integrations: Integration[];
   providerConfigs: ProviderConfig[];
+  credentials: Credential[];
+  tools: Tool[];
   userSettings: UserSettings[];
   sessions: { token: string; userId: string; createdAt: string }[];
   initializedAt: string;

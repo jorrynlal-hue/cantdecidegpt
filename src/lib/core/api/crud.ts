@@ -6,8 +6,9 @@ import * as finance from '../engine/finance';
 import * as docs from '../engine/docs';
 import * as misc from '../engine/misc';
 import * as admin from '../engine/admin';
-import { listExecutions, getExecution } from '../automation';
+import { listExecutions, getExecution, cancelExecution, verifyExecution } from '../automation';
 import * as human from '../engine/human';
+import * as control from '../engine/control';
 import { persist } from '../db';
 
 export const automationList = (db: DB, ws: string, q?: string) => listExecutions(db, ws, 80);
@@ -160,6 +161,11 @@ export const crud: Record<string, CrudDef> = {
   executions: {
     list: (db, ws, q) => automationList(db, ws, q.q),
     get: (db, ws, id) => automationGet(db, ws, id),
+    update: (ctx, db, id, p) => {
+      if (String(p.op ?? '') === 'verify') return verifyExecution(db, ctx.workspaceId, id);
+      if (String(p.op ?? '') === 'cancel') return cancelExecution(ctx, db, id);
+      return getExecution(db, ctx.workspaceId, id);
+    },
   },
   events: {
     list: (db, ws, q) => misc.listEvents(db, ws, q.from, q.to),
@@ -176,6 +182,25 @@ export const crud: Record<string, CrudDef> = {
   integrations: {
     list: (db, ws, q) => admin.listIntegrations(db, ws, qstr(q, 'category')),
     get: (db, ws, id) => admin.getIntegration(db, ws, id),
+    create: (ctx, db, b) => admin.createIntegration(ctx, db, { name: String(b.name ?? ''), kind: b.kind as never, category: b.category as never, provider: b.provider as string, domain: b.domain as string, endpoint: b.endpoint as string, scopes: b.scopes as string[] | undefined, settings: b.settings as Record<string, unknown> | undefined }),
+    update: (ctx, db, id, p) => {
+      if (String(p.op ?? '') === 'test') return admin.testIntegration(ctx, db, id);
+      return admin.updateIntegration(ctx, db, id, { name: p.name as string, kind: p.kind as never, provider: p.provider as string, domain: p.domain as string, endpoint: p.endpoint as string, scopes: p.scopes as string[] | undefined, settings: p.settings as Record<string, unknown> | undefined, status: p.status as never, health: p.health as never });
+    },
+  },
+  credentials: {
+    list: (db, ws) => control.listCredentials(db, ws),
+    get: (db, ws, id) => control.getCredential(db, ws, id),
+    create: (ctx, db, b) => control.createCredential(ctx, db, { name: String(b.name ?? ''), kind: b.kind as never, provider: b.provider as string, secret: b.secret as string, scopes: b.scopes as string[] | undefined, agentIds: b.agentIds as string[] | undefined, expiresAt: b.expiresAt as string }),
+    update: (ctx, db, id, p) => control.updateCredential(ctx, db, id, { name: p.name as string, kind: p.kind as never, provider: p.provider as string, scopes: p.scopes as string[] | undefined, agentIds: p.agentIds as string[] | undefined, status: p.status as never, expiresAt: p.expiresAt as string }),
+    remove: (ctx, db, id) => control.deleteCredential(ctx, db, id),
+  },
+  tools: {
+    list: (db, ws, q) => control.listTools(db, ws, q.q),
+    get: (db, ws, id) => control.getTool(db, ws, id),
+    create: (ctx, db, b) => control.createTool(ctx, db, { name: String(b.name ?? ''), description: b.description as string, capability: b.capability as string, inputs: b.inputs as string[] | undefined, permission: b.permission as string, auth: b.auth as string, risk: b.risk as never, cost: b.cost as string, availability: b.availability as string, owner: b.owner as string, agentAccess: b.agentAccess as boolean | undefined, humanAccess: b.humanAccess as boolean | undefined }),
+    update: (ctx, db, id, p) => control.updateTool(ctx, db, id, { name: p.name as string, description: p.description as string, capability: p.capability as string, inputs: p.inputs as string[] | undefined, permission: p.permission as string, auth: p.auth as string, risk: p.risk as never, cost: p.cost as string, availability: p.availability as string, owner: p.owner as string, agentAccess: p.agentAccess as boolean | undefined, humanAccess: p.humanAccess as boolean | undefined }),
+    remove: (ctx, db, id) => control.deleteTool(ctx, db, id),
   },
   providerConfigs: {
     list: (db, ws) => admin.listProviderConfigs(db, ws),

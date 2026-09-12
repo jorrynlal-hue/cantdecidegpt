@@ -62,6 +62,8 @@ export function freshDB(): DB {
     approvals: [],
     integrations: [],
     providerConfigs: [],
+    credentials: [],
+    tools: [],
     userSettings: [],
     sessions: [],
     initializedAt: now(),

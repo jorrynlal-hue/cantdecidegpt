@@ -8,7 +8,8 @@ export async function POST(req: Request) {
     const workflowId = String(body.workflowId ?? '');
     if (!workflowId) return fail('BAD_REQUEST', 'workflowId is required.');
     const payload = (body.payload as Record<string, unknown>) ?? {};
-    const execution = runWorkflow(ctx, db, workflowId, payload);
+    const dryRun = !!body.dryRun;
+    const execution = runWorkflow(ctx, db, workflowId, payload, dryRun);
     return ok({ execution });
   } catch (e) {
     return fromError(e);
