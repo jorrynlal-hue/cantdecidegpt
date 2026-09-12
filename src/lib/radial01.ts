@@ -5,6 +5,8 @@
 // relationship (connection) engine.
 // ---------------------------------------------------------------------------
 
+import { TIER_2 } from '@/lib/radial02';
+
 export type RadialFamily = 'system' | 'intelligence' | 'work' | 'growth' | 'delivery';
 
 export interface FamilyMeta {
@@ -171,19 +173,12 @@ export const TOOLKIT_TIERS: ToolkitTier[] = [
     href: '/dashboard/radial',
   },
   {
-    id: 'prokit',
-    name: 'Expansion 1',
-    price: '$1,000',
-    priceNote: 'one-time + activation',
-    status: 'planned',
-    tagline: 'Expansion toolkit \u2014 specification pending. Nothing invented yet.',
-    included: [],
-    missing: [
-      'Tool inventory not yet specified',
-      'No features listed \u2014 will be added when the spec is written',
+    ...TIER_2,
+    priceNote: TIER_2.priceNote,
+    included: [
+      ...TIER_2.included,
+      'Layered on the same CAN\u2019T DECIDE GPT ecosystem as Radial System 01 \u2014 same design system, distinct tier and purpose',
     ],
-    cta: 'Spec pending',
-    href: '/dashboard/toolkits',
   },
   {
     id: 'operatorkit',

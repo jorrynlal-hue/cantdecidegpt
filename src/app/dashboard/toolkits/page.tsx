@@ -27,9 +27,9 @@ export default function ToolkitsPage() {
         <div>
           <h1 className="text-lg font-bold text-white">Radial Toolkit Tiers</h1>
           <p className="mt-0.5 max-w-2xl text-xs leading-relaxed text-gray-500">
-            One operating system, three tiers. Tier 1 (Radial System 01) is shipped and live today with all
-            24 tools. Expansion tiers 2 and 3 are intentionally listed as placeholders only — their specs have
-            not been written, so nothing inside them is invented.
+            One operating system, three tiers. Tier 1 (Radial System 01) and Tier 2 (Radial System 02 —
+            the $1,000 Premium Human Life Radial) are both shipped and live. Tier 3&apos;s spec has not been
+            written, so nothing inside it is invented.
           </p>
         </div>
         <Link
@@ -44,28 +44,30 @@ export default function ToolkitsPage() {
         {TOOLKIT_TIERS.map((tier) => {
           const StatusIcon = STATUS_ICONS[tier.status];
           const isActive = tier.status === 'active';
+          const accent = tier.id === 'normal' ? '#19C9D6' : tier.id === 'prokit' ? '#FF5A91' : '#9aa3b2';
+          const activeBg = tier.id === 'prokit'
+            ? 'border-[#FF5A91]/30 bg-[linear-gradient(160deg,rgba(255,90,145,0.10),rgba(32,38,48,0.9)_50%)]'
+            : 'border-[#19C9D6]/30 bg-[linear-gradient(160deg,rgba(25,201,214,0.10),rgba(32,38,48,0.9)_50%)]';
           return (
             <Card
               key={tier.id}
-              className={isActive
-                ? 'border-[#19C9D6]/30 bg-[linear-gradient(160deg,rgba(25,201,214,0.10),rgba(32,38,48,0.9)_50%)]'
-                : 'border-white/5'}
+              className={isActive ? activeBg : 'border-white/5'}
             >
               <div className="mb-3 flex items-start justify-between">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
-                    {tier.id === 'normal' ? 'Tier 1 · included' : tier.id === 'prokit' ? 'Tier 2 · expansion' : 'Tier 3 · operator'}
+                    {tier.id === 'normal' ? 'Tier 1 · included' : tier.id === 'prokit' ? 'Tier 2 · premium' : 'Tier 3 · operator'}
                   </p>
                   <h2 className="mt-1 text-base font-bold text-white">{tier.name}</h2>
                 </div>
                 <div
                   className="flex h-9 w-9 items-center justify-center rounded-xl"
                   style={{
-                    background: isActive ? 'rgba(25,201,214,0.14)' : 'rgba(255,255,255,0.04)',
-                    border: isActive ? '1px solid rgba(25,201,214,0.35)' : '1px solid rgba(255,255,255,0.07)',
+                    background: isActive ? `${accent}24` : 'rgba(255,255,255,0.04)',
+                    border: isActive ? `1px solid ${accent}55` : '1px solid rgba(255,255,255,0.07)',
                   }}
                 >
-                  {isActive ? <Layers className="h-4 w-4 text-[#19C9D6]" /> : <HelpCircle className="h-4 w-4 text-gray-500" />}
+                  {isActive ? <Layers className="h-4 w-4" style={{ color: accent }} /> : <HelpCircle className="h-4 w-4 text-gray-500" />}
                 </div>
               </div>
 
@@ -105,7 +107,7 @@ export default function ToolkitsPage() {
                 <Link
                   href={tier.href}
                   className="mt-4 flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold text-[#0B1020]"
-                  style={{ background: 'linear-gradient(135deg, #20D9C3, #19C9D6)' }}
+                  style={{ background: tier.id === 'prokit' ? 'linear-gradient(135deg, #FF5A91, #D94D8A)' : 'linear-gradient(135deg, #20D9C3, #19C9D6)' }}
                 >
                   {tier.cta} <ArrowRight className="h-3.5 w-3.5" />
                 </Link>

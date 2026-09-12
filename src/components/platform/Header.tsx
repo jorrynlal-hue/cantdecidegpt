@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Bell, LogOut, Check, ChevronDown, CornerDownLeft, Loader2, MoreHorizontal, CircleDot } from 'lucide-react';
+import {
+  Bell, BellRing, Check, ChevronDown, CircleDot, CornerDownLeft, Cpu, FolderOpen, Globe,
+  HelpCircle, History, LayoutDashboard, LayoutTemplate, Layers, ListChecks, Loader2, Lock,
+  LogOut, MoreHorizontal, Palette, Plug, Search, ShieldCheck, Users, Volume2, Workflow,
+} from 'lucide-react';
 import { useSession } from './SessionProvider';
 import { search, notifications } from '@/lib/core/client';
-import { BOARD_TOOLS, CORE, FAMILIES, type RadialFamily } from '@/lib/radial01';
-
-const FAMILY_ORDER: RadialFamily[] = ['intelligence', 'system', 'work', 'growth', 'delivery'];
+import { CORE } from '@/lib/radial01';
 
 interface NotificationItem {
   id: string;
@@ -110,49 +112,91 @@ export default function Header() {
               <MoreHorizontal className="w-5 h-5" />
             </button>
             {showQuick && (
-              <div className="absolute left-0 mt-2 w-72 rounded-xl border border-white/10 bg-[#11111a] shadow-2xl overflow-hidden">
+              <div className="absolute left-0 mt-2 w-[340px] rounded-xl border border-white/10 bg-[#11111a] shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                  <p className="text-xs font-semibold text-white">Radial System 01 — all tools</p>
+                  <p className="text-xs font-semibold text-white">CAN&apos;T DECIDE GPT — Quick menu</p>
                   <span className="flex items-center gap-1 text-[10px] text-[#00D9B2]">
                     <CircleDot className="h-3 w-3" /> {CORE.short} live
                   </span>
                 </div>
-                <div className="max-h-[60vh] overflow-y-auto py-1">
-                  {FAMILY_ORDER.map((f) => {
-                    const tools = BOARD_TOOLS.filter((t) => t.family === f);
-                    if (tools.length === 0) return null;
-                    return (
-                      <div key={f} className="px-2 py-1.5">
-                        <p className="px-2 mb-1 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: FAMILIES[f].color }}>
-                          {FAMILIES[f].label}
-                        </p>
-                        {tools.map((t) => (
-                          <button
-                            key={t.id}
-                            onClick={() => {
-                              setShowQuick(false);
-                              router.push(t.href);
-                            }}
-                            className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white"
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full" style={{ background: FAMILIES[f].color }} />
-                            <span className="flex-1 truncate">{t.name}</span>
-                            {t.premium && <span className="text-[9px] text-[#FFC400]">PRO</span>}
-                          </button>
-                        ))}
-                      </div>
-                    );
-                  })}
+                <div className="max-h-[62vh] overflow-y-auto py-2">
+                  {(
+                    [
+                      { label: 'Overview', items: [{ label: 'Overview', href: '/dashboard', icon: LayoutDashboard }] },
+                      {
+                        label: 'Build',
+                        items: [
+                          { label: 'Workflow Builder', href: '/dashboard/workspace', icon: Workflow },
+                          { label: 'Radial Toolkits', href: '/dashboard/toolkits', icon: Layers },
+                          { label: 'Tasks', href: '/dashboard/tasks', icon: ListChecks },
+                          { label: 'Attention Required', href: '/dashboard/attention', icon: BellRing },
+                        ],
+                      },
+                      {
+                        label: 'Connected',
+                        items: [
+                          { label: 'Connected Apps', href: '/dashboard/integrations', icon: Plug },
+                          { label: 'AI Services', href: '/dashboard/ai', icon: Cpu },
+                          { label: 'Browsers and Websites', href: '/dashboard/website', icon: Globe },
+                        ],
+                      },
+                      {
+                        label: 'Data & History',
+                        items: [
+                          { label: 'Activity History', href: '/dashboard/activity', icon: History },
+                          { label: 'Files and Data', href: '/dashboard/docs', icon: FolderOpen },
+                          { label: 'Templates', href: '/dashboard/templates', icon: LayoutTemplate },
+                          { label: 'System Health', href: '/dashboard/trust', icon: ShieldCheck },
+                        ],
+                      },
+                      {
+                        label: 'Account & Help',
+                        items: [
+                          { label: 'Team and Permissions', href: '/dashboard/team', icon: Users },
+                          { label: 'Appearance Settings', href: '/dashboard/settings', icon: Palette },
+                          { label: 'Audio and Notifications', href: '/dashboard/settings', icon: Volume2 },
+                          { label: 'Security and Privacy', href: '/dashboard/security', icon: Lock },
+                          { label: 'Help and Keyboard Shortcuts', href: '/dashboard/help', icon: HelpCircle },
+                        ],
+                      },
+                    ] as Array<{ label: string; items: Array<{ label: string; href: string; icon: typeof LayoutDashboard }> }>
+                  ).map((group) => (
+                    <div key={group.label} className="px-2 py-1">
+                      <p className="px-2 mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">{group.label}</p>
+                      {group.items.map((item) => (
+                        <button
+                          key={item.href + item.label}
+                          onClick={() => {
+                            setShowQuick(false);
+                            router.push(item.href);
+                          }}
+                          className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white"
+                        >
+                          <item.icon className="h-3.5 w-3.5 text-gray-500" />
+                          <span className="flex-1 truncate">{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ))}
                 </div>
                 <div className="border-t border-white/5 p-2">
                   <button
                     onClick={() => {
                       setShowQuick(false);
-                      router.push('/dashboard/toolkits');
+                      router.push('/dashboard/radial');
                     }}
                     className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-[#19C9D6] hover:bg-white/5"
                   >
-                    View toolkit tiers ›
+                    Normal radial 01 (24 tools) ›
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowQuick(false);
+                      router.push('/dashboard/radial02');
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-[#FF5A91] hover:bg-white/5"
+                  >
+                    Premium radial 02 ($1,000) ›
                   </button>
                 </div>
               </div>

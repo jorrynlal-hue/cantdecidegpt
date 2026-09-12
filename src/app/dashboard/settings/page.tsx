@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Monitor, Palette, User as UserIcon, LogOut, KeyRound, Trash2 } from 'lucide-react';
+import { Monitor, Palette, User as UserIcon, LogOut, KeyRound, Trash2, Volume2, BellRing, Moon } from 'lucide-react';
 import { Card, CardHeader, Badge, Btn, Input, Field, Spinner } from '@/components/platform/ui';
 import { useSession } from '@/components/platform/SessionProvider';
+import { loadAudioPrefs, saveAudioPrefs, playTing, DEFAULT_AUDIO_PREFS, type AudioPrefs } from '@/lib/ting';
 
 const roleTone = (r: string) => (r === 'owner' || r === 'admin' ? 'red' : r === 'manager' ? 'amber' : r === 'member' ? 'blue' : 'gray') as 'red' | 'amber' | 'blue' | 'gray';
 
@@ -20,6 +21,30 @@ export default function SettingsPage() {
   const [baseUrl, setBaseUrl] = useState('');
   const [model, setModel] = useState('');
   const [aiBusy, setAiBusy] = useState(false);
+
+  const [audio, setAudio] = useState<AudioPrefs>(() => (typeof window === 'undefined' ? DEFAULT_AUDIO_PREFS : loadAudioPrefs()));
+  const [notifState, setNotifState] = useState<string>(() =>
+    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported');
+
+  const setPref = (p: Partial<AudioPrefs>) => {
+    setAudio((prev) => {
+      const next = { ...prev, ...p };
+      saveAudioPrefs(next);
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('cdg-audio-prefs'));
+      return next;
+    });
+  };
+
+  const testSound = () => playTing({ volume: audio.volume });
+
+  const askBrowser = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    try {
+      const perm = await Notification.requestPermission();
+      setNotifState(perm);
+      setPref({ browserNotify: perm === 'granted' });
+    } catch { /* denied or blocked */ }
+  };
 
   useEffect(() => {
     fetch('/api/providers').then((r) => r.json()).then((d) => {
@@ -120,6 +145,72 @@ export default function SettingsPage() {
             <Btn onClick={saveAppearance} disabled={busy}>{busy ? <Spinner /> : 'Save appearance'}</Btn>
             {saved && <span className="ml-3 self-center text-xs text-emerald-400">Saved.</span>}
           </div>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="Audio and notifications" sub="Controls the attendance &quot;ting · ting · ting&quot; alert. Sound only plays after you interact with the page, and never inside quiet hours." />
+        <div className="p-4 space-y-4">
+          <div className="flex items-center gap-2">
+            <Volume2 className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-300">Attention sound</span>
+            <button
+              onClick={() => setPref({ enabled: !audio.enabled })}
+              className={`relative ml-auto h-6 w-11 rounded-full transition-colors ${audio.enabled ? 'bg-emerald-500/70' : 'bg-white/10'}`}
+              aria-label="Toggle attention sound"
+            >
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${audio.enabled ? 'left-[22px]' : 'left-0.5'}`} />
+            </button>
+            <Badge tone={audio.enabled ? 'green' : 'gray'}>{audio.enabled ? 'on' : 'muted'}</Badge>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Volume2 className="w-4 h-4 text-gray-500" />
+            <span className="text-xs text-gray-400">Volume</span>
+            <input
+              type="range" min={0} max={100} value={audio.volume}
+              onChange={(e) => setPref({ volume: Number(e.target.value) })}
+              className="h-1.5 w-48 cursor-pointer accent-emerald-400"
+            />
+            <span className="w-10 text-xs text-gray-400 font-mono">{audio.volume}%</span>
+            <Btn small onClick={testSound}>Test sound</Btn>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Moon className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-300">Quiet hours</span>
+            <button
+              onClick={() => setPref({ quietEnabled: !audio.quietEnabled })}
+              className={`relative ml-auto h-6 w-11 rounded-full transition-colors ${audio.quietEnabled ? 'bg-purple-500/70' : 'bg-white/10'}`}
+              aria-label="Toggle quiet hours"
+            >
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${audio.quietEnabled ? 'left-[22px]' : 'left-0.5'}`} />
+            </button>
+            <Badge tone={audio.quietEnabled ? 'purple' : 'gray'}>{audio.quietEnabled ? 'on' : 'off'}</Badge>
+          </div>
+          {audio.quietEnabled && (
+            <div className="flex items-center gap-3 pl-7">
+              <Field label="From"><Input type="time" value={audio.quietFrom} onChange={(v) => setPref({ quietFrom: v })} /></Field>
+              <Field label="To"><Input type="time" value={audio.quietTo} onChange={(v) => setPref({ quietTo: v })} /></Field>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-white/10 px-3 py-2.5">
+            <div className="flex items-center gap-2">
+              <BellRing className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-300">Browser notifications</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge tone={notifState === 'granted' ? 'green' : notifState === 'denied' ? 'red' : 'gray'}>
+                {notifState === 'granted' ? 'granted' : notifState === 'denied' ? 'blocked' : notifState === 'default' ? 'not asked' : 'unsupported'}
+              </Badge>
+              <Btn small onClick={askBrowser} disabled={notifState === 'denied' || notifState === 'unsupported'}>Enable</Btn>
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-600">
+            Saved to this browser. The amber visual alert stays visible even when the sound is muted.
+            Browsers require a first interaction before any sound can play — that is enforced here too.
+          </p>
         </div>
       </Card>
 

@@ -44,6 +44,8 @@ import {
   SlidersHorizontal,
   Radar,
   Layers,
+  Crown,
+  BellRing,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -69,7 +71,15 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     label: 'Toolkits',
     items: [
       { label: 'Radial Board', href: '/dashboard/radial', icon: Radar, prefix: '/dashboard/radial' },
+      { label: 'Premium Radial 02', href: '/dashboard/radial02', icon: Crown, prefix: '/dashboard/radial02' },
       { label: 'Toolkit Tiers', href: '/dashboard/toolkits', icon: Layers, prefix: '/dashboard/toolkits' },
+    ],
+  },
+  {
+    label: 'Workflow Dashboard',
+    items: [
+      { label: 'Workflow Builder', href: '/dashboard/workspace', icon: Workflow, prefix: '/dashboard/workspace' },
+      { label: 'Attention Required', href: '/dashboard/attention', icon: BellRing, prefix: '/dashboard/attention' },
     ],
   },
   {
