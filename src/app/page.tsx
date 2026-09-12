@@ -1,18 +1,10 @@
-ï»¿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import {
   Sparkles,
-  MessageSquare,
-  Code,
-  ImageIcon,
-  FileText,
-  Languages,
-  PenTool,
-  BarChart3,
-  Mic,
   ArrowRight,
   Play,
   Check,
@@ -22,6 +14,13 @@ import {
   HeartHandshake,
   Brain,
   Activity,
+  Terminal,
+  Plug,
+  Cloud,
+  KeyRound,
+  SlidersHorizontal,
+  ShieldCheck,
+  Bot,
 } from "lucide-react";
 import { SITE_PLANS, type SitePlan } from "@/lib/plans";
 
@@ -33,65 +32,65 @@ const NAV_LINKS = [
 
 const FEATURES = [
   {
-    icon: MessageSquare,
-    title: "AI Chat",
-    description: "Intelligent conversations powered by advanced language models",
+    icon: Activity,
+    title: "Live Mission Control",
+    description: "One live screen for every AI agent, human, browser and workflow — statuses, attention flags, verify and undo.",
   },
   {
-    icon: Code,
-    title: "Code Generator",
-    description: "Write, debug, and refactor code in 50+ languages",
+    icon: SlidersHorizontal,
+    title: "Universal Control Center",
+    description: "Point every capability at the real thing: AI models, connectors, a secure credential vault and a tool registry in one console.",
   },
   {
-    icon: ImageIcon,
-    title: "Image Generator",
-    description: "Create stunning visuals from text descriptions",
+    icon: Plug,
+    title: "Connectors & Browser",
+    description: "API, OAuth, webhook, MCP and browser sessions for allowed domains — tested, health-checked, human-approved.",
   },
   {
-    icon: FileText,
-    title: "Text Summarizer",
-    description: "Condense lengthy documents into key insights",
+    icon: HeartHandshake,
+    title: "Human + AI Approvals",
+    description: "AI drafts the volume. Humans keep judgement at every approval gate before anything ships.",
   },
   {
-    icon: Languages,
-    title: "Translator",
-    description: "Translate between 100+ languages instantly",
+    icon: ShieldCheck,
+    title: "Dry-run & Verify",
+    description: "Preview every automation with zero side effects, then verify the live run actually did the work.",
   },
   {
-    icon: PenTool,
-    title: "Writing Assistant",
-    description: "Craft emails, blogs, essays, and more with AI",
+    icon: Cloud,
+    title: "Cloud Backup & Undo",
+    description: "Versioned cloud snapshots of the whole workspace — undo to any restore point in one click.",
   },
   {
-    icon: BarChart3,
-    title: "Data Analysis",
-    description: "Sentiment analysis, entity extraction, and more",
+    icon: KeyRound,
+    title: "Credential Vault",
+    description: "Secrets are never stored — masked hints with scopes, expiry and per-agent access control.",
   },
   {
-    icon: Mic,
-    title: "Voice-to-Text",
-    description: "Transcribe and process audio content",
+    icon: Bot,
+    title: "Generativity Everywhere",
+    description: "Chat, code, image, voice and insight generation across AI agents, workflows and the whole network.",
   },
 ];
 
 const STEPS = [
   {
     step: "01",
-    title: "Choose Your Tool",
+    title: "Command the Network",
     description:
-      "Pick from chat, code, images, translation, and more â€” every AI capability in one place.",
+      "Say what needs done — tasks, outreach, research, invoices, content. The platform assembles the right people, AI and tools.",
   },
   {
     step: "02",
-    title: "Input Your Request",
+    title: "AI Drafts, Humans Decide",
     description:
-      "Type, paste, or speak your request. Our interface adapts to whatever you're trying to build.",
+      "AI carries the volume while approval gates keep judgement where it belongs. Dry-run anything with zero side effects first.",
   },
   {
     step: "03",
-    title: "Get AI-Powered Results",
+    title: "Track, Verify, Undo",
     description:
-      "Receive instant, polished results you can refine, iterate on, and export in seconds.",
+      "Watch it all live on Mission Control, verify real runs, and restore any cloud snapshot the moment something feels off.",
   },
 ];
 
@@ -188,8 +187,8 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
             className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl"
           >
-            We'll connect the right people, AI, tools and businesses to get it
-            done â€” in one workspace.
+            We&apos;ll connect the right people, AI, tools and businesses to get it
+            done — in one workspace.
           </motion.p>
 
           <motion.p
@@ -240,7 +239,60 @@ export default function Home() {
               <Check className="h-4 w-4 text-primary" /> Cancel anytime
             </span>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.7, ease: "easeOut" }}
+            className="mx-auto mt-12 max-w-2xl"
+          >
+            <div className="rounded-2xl border border-primary/30 bg-surface/70 p-4 text-left shadow-2xl shadow-primary/10 backdrop-blur">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <Terminal className="h-4 w-4" />
+                </span>
+                <p className="truncate text-sm text-foreground/80">
+                  “Ship the weekly customer update — ask finance to approve the invoice run first.”
+                </p>
+                <span className="ml-auto inline-flex h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-emerald-400" />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {["Crew assigned", "Approval pending", "Dry-run ready", "Verified ?"].map((chip) => (
+                  <span key={chip} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary-light">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
+      </section>
+
+      {/* ============ PRODUCT TRAIL ============ */}
+      <section className="relative border-y border-border/60 bg-surface/30 px-6 py-10">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3">
+          {[
+            { icon: Activity, title: "Mission Control", href: "/dashboard/missioncontrol", sub: "Live execution for agents, humans & workflows" },
+            { icon: SlidersHorizontal, title: "Control Center", href: "/dashboard/control", sub: "Models, connectors, vault & tool registry" },
+            { icon: ShieldCheck, title: "Approvals & Verify", href: "/dashboard/automation", sub: "Dry-runs, approval gates and live verification" },
+          ].map((item) => (
+            <Link
+              key={item.title}
+              href={item.href}
+              className="group rounded-xl border border-border bg-surface/40 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface"
+            >
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 text-primary-light transition-colors group-hover:bg-primary group-hover:text-white">
+                  <item.icon className="h-4.5 w-4.5" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">{item.title}</p>
+                  <p className="text-xs text-muted">{item.sub}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* ============ FEATURES ============ */}
@@ -251,12 +303,12 @@ export default function Home() {
               Features
             </p>
 <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-                People Â· Businesses Â· AI Â· Services
+                People · Businesses · AI · Services
               </h2>
             <p className="mt-4 text-lg text-muted">
-              A universal network where work gets done. Every capability â€” code,
-              design, writing, analysis, voice â€” can be delivered by AI, a human,
-              or a hybrid team.
+              A universal network where work gets done. Every capability — code,
+              design, writing, analysis, voice — can be delivered by AI, a human,
+              or a hybrid team. Mission Control keeps it all honest and observable.
             </p>
           </Reveal>
 
@@ -323,7 +375,7 @@ export default function Home() {
             </h2>
             <p className="mt-4 text-lg text-muted">
               Full human integrations with high-tech AI. Humans stay in the
-              loop by design â€” AI carries the busywork, people keep the
+              loop by design — AI carries the busywork, people keep the
               judgement, and the insight board keeps generating.
             </p>
           </Reveal>
@@ -354,7 +406,7 @@ export default function Home() {
                 points: [
                   "Direction from humans",
                   "Volume drafted by AI",
-                  "Before AI ends us â€” we build it together",
+                  "Before AI ends us — we build it together",
                 ],
               },
             ].map((card, i) => (
@@ -401,7 +453,7 @@ export default function Home() {
             </h2>
             <p className="mt-4 text-lg text-muted">
               The $1,000 plan covers the basic tools and services with the $1,000
-              special included â€” the $1,600 plan adds the operator special with
+              special included — the $1,600 plan adds the operator special with
               over $1,500 of new tools.
             </p>
           </Reveal>
@@ -523,7 +575,7 @@ export default function Home() {
                 <span className="text-gradient">Workflow?</span>
               </h2>
               <p className="relative mx-auto mt-5 max-w-xl text-lg text-muted">
-                Join thousands of teams building faster with Can't Decide GPT. Your first
+                Join thousands of teams building faster with Can&apos;t Decide GPT. Your first
                 steps are free.
               </p>
               <div className="relative mt-10">
@@ -547,7 +599,7 @@ export default function Home() {
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary">
               <Sparkles className="h-4 w-4" />
             </span>
-            <span className="text-lg font-semibold">Can't Decide GPT</span>
+            <span className="text-lg font-semibold">Can&apos;t Decide GPT</span>
           </div>
           <nav className="flex items-center gap-6 text-sm text-muted">
             {NAV_LINKS.map((link) => (
@@ -561,7 +613,7 @@ export default function Home() {
             ))}
           </nav>
           <p className="text-sm text-muted">
-            Â© 2026 Can't Decide GPT. All rights reserved.
+            © 2026 Can&apos;t Decide GPT. All rights reserved.
           </p>
         </div>
       </footer>
@@ -595,7 +647,7 @@ function Navbar() {
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
             <Sparkles className="h-5 w-5" />
           </span>
-          <span className="text-xl font-bold tracking-tight">Can't Decide GPT</span>
+          <span className="text-xl font-bold tracking-tight">Can&apos;t Decide GPT</span>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
@@ -612,7 +664,7 @@ function Navbar() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/signin"
+            href="/login"
             className="hidden rounded-full px-4 py-2 text-sm font-medium text-muted transition-colors hover:text-foreground sm:block"
           >
             Sign In

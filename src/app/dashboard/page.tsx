@@ -559,6 +559,30 @@ export default function CommandCenterPage() {
         </div>
       </div>
 
+      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {[
+          { icon: Activity, label: 'Mission Control', sub: 'Live execution · verify · undo', href: '/dashboard/missioncontrol', accent: 'cyan' },
+          { icon: ShieldCheck, label: 'Control Center', sub: 'Models · connectors · vault · tools', href: '/dashboard/control', accent: 'purple' },
+          { icon: Workflow, label: 'Automation Ops', sub: 'Dry-runs · approvals · verification', href: '/dashboard/automation', accent: 'emerald' },
+        ].map((q) => (
+          <Link
+            key={q.href}
+            href={q.href}
+            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-[#050508] px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.03]"
+          >
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+              q.accent === 'cyan' ? 'border-cyan-400/30 bg-cyan-400/10 text-cyan-300' : q.accent === 'purple' ? 'border-violet-400/30 bg-violet-400/10 text-violet-300' : 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+            }`}>
+              <q.icon className="h-4 w-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-[12px] font-semibold text-gray-100">{q.label}</span>
+              <span className="block truncate text-[10px] text-gray-500">{q.sub}</span>
+            </span>
+          </Link>
+        ))}
+      </div>
+
       <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-white/10 bg-[#050508] p-3">
           <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
