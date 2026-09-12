@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -34,7 +34,7 @@ const FEATURES = [
   {
     icon: Activity,
     title: "Live Mission Control",
-    description: "One live screen for every AI agent, human, browser and workflow — statuses, attention flags, verify and undo.",
+    description: "One live screen for every AI agent, human, browser and workflow â€” statuses, attention flags, verify and undo.",
   },
   {
     icon: SlidersHorizontal,
@@ -44,7 +44,7 @@ const FEATURES = [
   {
     icon: Plug,
     title: "Connectors & Browser",
-    description: "API, OAuth, webhook, MCP and browser sessions for allowed domains — tested, health-checked, human-approved.",
+    description: "API, OAuth, webhook, MCP and browser sessions for allowed domains â€” tested, health-checked, human-approved.",
   },
   {
     icon: HeartHandshake,
@@ -59,12 +59,12 @@ const FEATURES = [
   {
     icon: Cloud,
     title: "Cloud Backup & Undo",
-    description: "Versioned cloud snapshots of the whole workspace — undo to any restore point in one click.",
+    description: "Versioned cloud snapshots of the whole workspace â€” undo to any restore point in one click.",
   },
   {
     icon: KeyRound,
     title: "Credential Vault",
-    description: "Secrets are never stored — masked hints with scopes, expiry and per-agent access control.",
+    description: "Secrets are never stored â€” masked hints with scopes, expiry and per-agent access control.",
   },
   {
     icon: Bot,
@@ -78,7 +78,7 @@ const STEPS = [
     step: "01",
     title: "Command the Network",
     description:
-      "Say what needs done — tasks, outreach, research, invoices, content. The platform assembles the right people, AI and tools.",
+      "Say what needs done â€” tasks, outreach, research, invoices, content. The platform assembles the right people, AI and tools.",
   },
   {
     step: "02",
@@ -188,7 +188,7 @@ export default function Home() {
             className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl"
           >
             We&apos;ll connect the right people, AI, tools and businesses to get it
-            done — in one workspace.
+            done â€” in one workspace.
           </motion.p>
 
           <motion.p
@@ -252,12 +252,12 @@ export default function Home() {
                   <Terminal className="h-4 w-4" />
                 </span>
                 <p className="truncate text-sm text-foreground/80">
-                  “Ship the weekly customer update — ask finance to approve the invoice run first.”
+                  &ldquo;Ship the weekly customer update â€” ask finance to approve the invoice run first.&rdquo;
                 </p>
                 <span className="ml-auto inline-flex h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-emerald-400" />
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                {["Crew assigned", "Approval pending", "Dry-run ready", "Verified ?"].map((chip) => (
+                {["Crew assigned", "Approval pending", "Dry-run ready", "Verified done"].map((chip) => (
                   <span key={chip} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary-light">
                     {chip}
                   </span>
@@ -303,11 +303,11 @@ export default function Home() {
               Features
             </p>
 <h2 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-                People · Businesses · AI · Services
+                People Â· Businesses Â· AI Â· Services
               </h2>
             <p className="mt-4 text-lg text-muted">
-              A universal network where work gets done. Every capability — code,
-              design, writing, analysis, voice — can be delivered by AI, a human,
+              A universal network where work gets done. Every capability â€” code,
+              design, writing, analysis, voice â€” can be delivered by AI, a human,
               or a hybrid team. Mission Control keeps it all honest and observable.
             </p>
           </Reveal>
@@ -375,7 +375,7 @@ export default function Home() {
             </h2>
             <p className="mt-4 text-lg text-muted">
               Full human integrations with high-tech AI. Humans stay in the
-              loop by design — AI carries the busywork, people keep the
+              loop by design â€” AI carries the busywork, people keep the
               judgement, and the insight board keeps generating.
             </p>
           </Reveal>
@@ -406,7 +406,7 @@ export default function Home() {
                 points: [
                   "Direction from humans",
                   "Volume drafted by AI",
-                  "Before AI ends us — we build it together",
+                  "Before AI ends us â€” we build it together",
                 ],
               },
             ].map((card, i) => (
@@ -453,7 +453,7 @@ export default function Home() {
             </h2>
             <p className="mt-4 text-lg text-muted">
               The $1,000 plan covers the basic tools and services with the $1,000
-              special included — the $1,600 plan adds the operator special with
+              special included â€” the $1,600 plan adds the operator special with
               over $1,500 of new tools.
             </p>
           </Reveal>
@@ -613,7 +613,7 @@ export default function Home() {
             ))}
           </nav>
           <p className="text-sm text-muted">
-            © 2026 Can&apos;t Decide GPT. All rights reserved.
+            Â© 2026 Can&apos;t Decide GPT. All rights reserved.
           </p>
         </div>
       </footer>
