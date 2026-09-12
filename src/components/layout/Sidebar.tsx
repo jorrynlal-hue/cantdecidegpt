@@ -42,6 +42,8 @@ import {
   Cpu,
   Airplay,
   SlidersHorizontal,
+  Radar,
+  Layers,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -61,6 +63,13 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
       { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
       { label: 'Tasks & Projects', href: '/dashboard/work', icon: ListChecks, prefix: '/dashboard/work' },
       { label: 'Calendar', href: '/dashboard/calendar', icon: Calendar, prefix: '/dashboard/calendar' },
+    ],
+  },
+  {
+    label: 'Toolkits',
+    items: [
+      { label: 'Radial Board', href: '/dashboard/radial', icon: Radar, prefix: '/dashboard/radial' },
+      { label: 'Toolkit Tiers', href: '/dashboard/toolkits', icon: Layers, prefix: '/dashboard/toolkits' },
     ],
   },
   {

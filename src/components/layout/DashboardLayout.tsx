@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Header from '../platform/Header';
+import StatusBar from './StatusBar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -36,6 +37,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Header />
 
         <main className="flex-1 p-4 lg:p-6">{children}</main>
+
+        <StatusBar />
       </motion.div>
     </div>
   );

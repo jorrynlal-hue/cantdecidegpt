@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Bell, LogOut, Check, ChevronDown, CornerDownLeft, Loader2 } from 'lucide-react';
+import { Search, Bell, LogOut, Check, ChevronDown, CornerDownLeft, Loader2, MoreHorizontal, CircleDot } from 'lucide-react';
 import { useSession } from './SessionProvider';
 import { search, notifications } from '@/lib/core/client';
+import { BOARD_TOOLS, CORE, FAMILIES, type RadialFamily } from '@/lib/radial01';
+
+const FAMILY_ORDER: RadialFamily[] = ['intelligence', 'system', 'work', 'growth', 'delivery'];
 
 interface NotificationItem {
   id: string;
@@ -29,6 +32,7 @@ export default function Header() {
   const [notifs, setNotifs] = useState<NotificationItem[]>([]);
   const [notifLoading, setNotifLoading] = useState(false);
   const [showUser, setShowUser] = useState(false);
+  const [showQuick, setShowQuick] = useState(false);
   const [wsOpen, setWsOpen] = useState(false);
   const paletteRef = useRef<HTMLDivElement>(null);
 
@@ -96,6 +100,64 @@ export default function Header() {
     <header className="sticky top-0 z-30 h-16 border-b border-white/5 bg-black/80 backdrop-blur-xl">
       <div className="flex items-center justify-between h-full px-4 lg:px-6 gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Three-dot quick menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowQuick((v) => !v)}
+              className="p-2 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors"
+              aria-label="Quick menu"
+            >
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+            {showQuick && (
+              <div className="absolute left-0 mt-2 w-72 rounded-xl border border-white/10 bg-[#11111a] shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                  <p className="text-xs font-semibold text-white">Radial System 01 — all tools</p>
+                  <span className="flex items-center gap-1 text-[10px] text-[#00D9B2]">
+                    <CircleDot className="h-3 w-3" /> {CORE.short} live
+                  </span>
+                </div>
+                <div className="max-h-[60vh] overflow-y-auto py-1">
+                  {FAMILY_ORDER.map((f) => {
+                    const tools = BOARD_TOOLS.filter((t) => t.family === f);
+                    if (tools.length === 0) return null;
+                    return (
+                      <div key={f} className="px-2 py-1.5">
+                        <p className="px-2 mb-1 text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: FAMILIES[f].color }}>
+                          {FAMILIES[f].label}
+                        </p>
+                        {tools.map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => {
+                              setShowQuick(false);
+                              router.push(t.href);
+                            }}
+                            className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white"
+                          >
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ background: FAMILIES[f].color }} />
+                            <span className="flex-1 truncate">{t.name}</span>
+                            {t.premium && <span className="text-[9px] text-[#FFC400]">PRO</span>}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="border-t border-white/5 p-2">
+                  <button
+                    onClick={() => {
+                      setShowQuick(false);
+                      router.push('/dashboard/toolkits');
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-[#19C9D6] hover:bg-white/5"
+                  >
+                    View toolkit tiers ›
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => setShowPalette(true)}
             className="flex items-center gap-2 flex-1 max-w-md min-w-0 bg-[#12121a] border border-white/5 rounded-lg px-3 py-2 cursor-pointer hover:border-white/10 transition-colors"
@@ -252,13 +314,14 @@ export default function Header() {
       )}
 
       {/* close popovers on outside click */}
-      {(showNotifs || showUser || wsOpen) && (
+      {(showNotifs || showUser || wsOpen || showQuick) && (
         <div
           className="fixed inset-0 z-20"
           onClick={() => {
             setShowNotifs(false);
             setShowUser(false);
             setWsOpen(false);
+            setShowQuick(false);
           }}
         />
       )}
