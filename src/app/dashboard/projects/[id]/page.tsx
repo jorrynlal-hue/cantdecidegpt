@@ -35,6 +35,7 @@ import { Badge, Btn, Card, Empty, Spinner } from '@/components/platform/ui';
 import { useCollection } from '@/components/platform/data';
 import { OrbitalKits } from '@/components/projects/OrbitalKits';
 import type { ModuleMeta as OrbitalModuleMeta } from '@/components/projects/OrbitalKits';
+import { ProjectIntake } from '@/components/projects/ProjectIntake';
 import { playTing } from '@/lib/ting';
 import { getBrand } from '@/lib/theme';
 
@@ -1267,6 +1268,11 @@ function FlowCanvas(props: {
         integrations={connected}
         onOpenIntegrations={() => router.push('/dashboard/integrations')}
       />
+
+      {/* intake phase — accepted project files + the progress briefing for this project */}
+      <div className="mt-6">
+        <ProjectIntake projectId={project.id} compact coreLabel={coreLabel} />
+      </div>
 
       {drawer && (
         <div className="fixed inset-0 z-40 flex justify-end bg-black/60 backdrop-blur-sm" onClick={() => setDrawer(false)}>

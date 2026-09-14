@@ -46,6 +46,9 @@ import {
   CheckCircle2,
   Handshake,
   Mic,
+  Map,
+  Orbit,
+  FolderKanban,
 } from "lucide-react";
 import { ThemeScope } from "@/lib/theme";
 import Preview from "@/components/landing/Preview";
@@ -342,7 +345,7 @@ export default function Landing() {
                   Start your human AI workspace <ArrowRight className="h-4 w-4" />
                 </CTA>
                 <CTA href="/demo" kind="outline">
-                  <Eye className="h-4 w-4" /> View demo
+                  <Play className="h-4 w-4" /> Preview the live dashboard
                 </CTA>
                 <CTA href="#how" kind="outline">
                   <Play className="h-4 w-4" /> See how it works
@@ -373,6 +376,46 @@ export default function Landing() {
               <span>For a team</span><span className="h-1 w-1 rounded-full bg-[var(--c-accent-text)]" />
               <span>For a business</span><span className="h-1 w-1 rounded-full bg-[var(--c-accent-text)]" />
               <span>For a larger organisation</span>
+            </div>
+          </section>
+
+          {/* ============================ LIVE DEMO PREVIEW ============================ */}
+          <section id="live-demo" className="relative px-5 py-20 sm:px-8 sm:py-28">
+            <div className="mx-auto max-w-6xl">
+              <SectionHead
+                kicker="Live dashboard demo"
+                title={<>Preview how the dashboard performs — <span className="bg-gradient-to-r from-[var(--c-accent-text)] to-[#e883ff] bg-clip-text text-transparent">before you sign up.</span></>}
+                sub="Real screens, really running: zoom the infinite system map over every workflow, every tool and all three radial toolkits, open the project constellation, and hover the orbital tools. No account needed — it behaves exactly like the live system."
+              />
+              <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
+                {[
+                  { href: "/demo#system-map", icon: Map, t: "The infinite system map", d: "Zoom out to see every workflow lane, the zones, every tool in the system, and the three radial toolkits side by side — then zoom back in." },
+                  { href: "/demo#projects-space", icon: FolderKanban, t: "The projects space", d: "The floating project constellation, the create hub, live attention ticks and the free space that holds the radial toolkits and briefings." },
+                  { href: "/demo#radial-toolkits", icon: Orbit, t: "All three radial tool kits", d: "Tier 1 CORE included, the $1,000 PREMIUMS and the $1,600 PRO PREMIUMS. Hover a tool, open it, read what it is and how it helps." },
+                ].map((d, i) => (
+                  <Reveal key={d.href} delay={i * 0.08}>
+                    <Link
+                      href={d.href}
+                      className="group flex h-full flex-col rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition-all hover:-translate-y-1 hover:border-[var(--c-accent-border)] hover:bg-white/[0.05] hover:shadow-[0_0_30px_var(--c-accent)]"
+                    >
+                      <span className="grid h-11 w-11 place-items-center rounded-xl border border-[var(--c-accent-border)] bg-[var(--c-accent-soft)] text-[var(--c-accent-text)] shadow-[var(--c-glow)]">
+                        <d.icon className="h-5 w-5" />
+                      </span>
+                      <h3 className="mt-4 text-base font-bold text-white">{d.t}</h3>
+                      <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--muted)]">{d.d}</p>
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--c-accent-text)]">
+                        Preview it <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </Link>
+                  </Reveal>
+                ))}
+              </div>
+              <Reveal delay={0.18} className="mt-10 text-center">
+                <CTA href="/demo">
+                  Open the live dashboard demo <ArrowRight className="h-4 w-4" />
+                </CTA>
+                <p className="mt-3 text-xs text-[var(--muted)]/80">No signup · no setup · the real system, clickable right now.</p>
+              </Reveal>
             </div>
           </section>
 

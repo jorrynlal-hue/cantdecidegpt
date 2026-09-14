@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { ThemeScope } from '@/lib/theme';
 import Preview from '@/components/landing/Preview';
+import LiveDashboardPreview from '@/components/demo/LiveDashboardPreview';
 import { SITE_PLANS } from '@/lib/plans';
 
 const GUEST_PROJECTS = [
@@ -118,9 +119,22 @@ export default function DemoPage() {
               </div>
             </section>
 
+            {/* Live dashboard preview */}
+            <section className="mt-16">
+              <ScreenLabel n="04" title="Preview the dashboard — live, clickable, no account" />
+              <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
+                This is the real dashboard running right here. Zoom the system map out and back in over every workflow, every tool
+                and all three radial toolkits, open the project space, and hover the orbital tools. It behaves exactly like the pages
+                you get after signing in.
+              </p>
+              <div className="mt-5">
+                <LiveDashboardPreview />
+              </div>
+            </section>
+
             {/* Plans */}
             <section className="mt-16">
-              <ScreenLabel n="04" title="The two specials — every plan, its own toolkit" />
+              <ScreenLabel n="05" title="The two specials — every plan, its own toolkit" />
               <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {plans.map((plan) => (
                   <div key={plan.id} className={`rounded-3xl border p-6 ${plan.featured ? 'border-[var(--c-accent-border)]' : 'border-white/10 bg-white/[0.02]'}`}>

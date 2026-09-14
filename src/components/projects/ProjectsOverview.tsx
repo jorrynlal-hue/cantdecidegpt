@@ -22,6 +22,7 @@ import { collection, plans } from '@/lib/core/client';
 import { useTheme, getBrand } from '@/lib/theme';
 import { OrbitalKits } from '@/components/projects/OrbitalKits';
 import { SystemMapSection } from '@/components/projects/InfiniteSystemMap';
+import { ProjectIntake } from '@/components/projects/ProjectIntake';
 
 interface Project {
   id: string; name: string; description?: string; status: string; ownerId?: string;
@@ -454,6 +455,11 @@ export default function ProjectsOverview() {
         </div>
         <OrbitalKits which="all" coreLabel={coreLabel} subtitle="System Intelligence Active" />
       </section>
+
+      {/* project intake — accept a full project from the computer into a new or existing project */}
+      <div className="mt-8">
+        <ProjectIntake coreLabel={coreLabel} />
+      </div>
 
       {/* system map — the same infinite view, in its own section on this page */}
       <SystemMapSection title="System map — zoom out over every workflow &amp; tool, then back in" />
