@@ -19,7 +19,9 @@ import {
 import { Btn, Empty, Field, Input, Modal, Select, Textarea } from '@/components/platform/ui';
 import { useCollection } from '@/components/platform/data';
 import { collection, plans } from '@/lib/core/client';
-import { useTheme } from '@/lib/theme';
+import { useTheme, getBrand } from '@/lib/theme';
+import { OrbitalKits } from '@/components/projects/OrbitalKits';
+import { SystemMapSection } from '@/components/projects/InfiniteSystemMap';
 
 interface Project {
   id: string; name: string; description?: string; status: string; ownerId?: string;
@@ -113,6 +115,7 @@ export default function ProjectsOverview() {
   const [deadline, setDeadline] = useState('');
   const [people, setPeople] = useState('');
   const [today, setToday] = useState(0);
+  const [coreLabel] = useState(() => (typeof window === 'undefined' ? 'CDG' : getBrand()));
 
   useEffect(() => {
     plans.list().then((r) => setActivePlan(r.active)).catch(() => {});
@@ -441,6 +444,19 @@ export default function ProjectsOverview() {
           })
         )}
       </div>
+
+      {/* free space — the three radial toolkits, viewable right here */}
+      <section className="mt-8 rounded-2xl border border-white/5 bg-[#080a11]/50 p-4 lg:p-6">
+        <div className="mb-4 flex flex-wrap items-baseline gap-3 border-b border-white/5 pb-3">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--c-accent-text)]">free space · radial toolkits</p>
+          <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-slate-200">All three radial tool kits in the field</h2>
+          <span className="ml-auto text-[10px] text-gray-500">Tier 1 CORE included · $1,000 PREMIUMS · $1,600 PRO PREMIUMS — hover a tool, open it, read what it is and how it helps.</span>
+        </div>
+        <OrbitalKits which="all" coreLabel={coreLabel} subtitle="System Intelligence Active" />
+      </section>
+
+      {/* system map — the same infinite view, in its own section on this page */}
+      <SystemMapSection title="System map — zoom out over every workflow &amp; tool, then back in" />
 
       <Modal open={open} onClose={() => setOpen(false)} title={editTarget ? 'Edit project' : 'New project'} wide>
         <div className="grid gap-3 sm:grid-cols-2">

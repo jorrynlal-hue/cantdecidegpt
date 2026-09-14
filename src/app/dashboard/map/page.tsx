@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useRef, useState, type SVGProps } from 'react';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ import {
 import { HUB_TOOLS, RESTORED_TOOLS, ZONE_LABELS, ALL_TOOLS, assertHub, assertAllTools, hubTotal, type HubTool, type RestoredTool } from '@/lib/hub';
 import { collection } from '@/lib/core/client';
 import { createRecognition, matchVoiceNav, voiceSupported, type SpeechRecognitionLike } from '@/lib/voice';
+import { SystemMapSection } from '@/components/projects/InfiniteSystemMap';
 
 const ICONS: Record<string, LucideIcon> = {
   Waypoints, Gauge, ShieldCheck, KeyRound, Settings, Users, BrainCircuit,
@@ -72,10 +73,10 @@ interface LaneDef {
 }
 
 const LANES: LaneDef[] = [
-  { id: 'intelligence', label: 'Intelligence & Decisions', step: 'STEP 01 · READ', tagline: 'live state of the business, read first', color: '#22d3ee', y: 140, tools: ['executive', 'insights', 'analytics', 'reports', 'attribution'] },
-  { id: 'govern', label: 'Governance & Trust', step: 'STEP 02 · SAFEGUARD', tagline: 'who can act and what is protected', color: '#a78bfa', y: 400, tools: ['admin', 'security', 'settings', 'team', 'ai'] },
-  { id: 'operate', label: 'Operations & Execution', step: 'STEP 03 · EXECUTE', tagline: 'the work pipeline that actually runs', color: '#34d399', y: 660, tools: ['operations', 'automation', 'integrations', 'memory', 'performer'] },
-  { id: 'revenue', label: 'Revenue & Delivery', step: 'STEP 04 · DELIVER', tagline: 'money and outcomes in the door', color: '#fbbf24', y: 920, tools: ['finance', 'website', 'marketing', 'hr', 'connect'] },
+  { id: 'intelligence', label: 'Intelligence & Decisions', step: 'STEP 01 ┬╖ READ', tagline: 'live state of the business, read first', color: '#22d3ee', y: 140, tools: ['executive', 'insights', 'analytics', 'reports', 'attribution'] },
+  { id: 'govern', label: 'Governance & Trust', step: 'STEP 02 ┬╖ SAFEGUARD', tagline: 'who can act and what is protected', color: '#a78bfa', y: 400, tools: ['admin', 'security', 'settings', 'team', 'ai'] },
+  { id: 'operate', label: 'Operations & Execution', step: 'STEP 03 ┬╖ EXECUTE', tagline: 'the work pipeline that actually runs', color: '#34d399', y: 660, tools: ['operations', 'automation', 'integrations', 'memory', 'performer'] },
+  { id: 'revenue', label: 'Revenue & Delivery', step: 'STEP 04 ┬╖ DELIVER', tagline: 'money and outcomes in the door', color: '#fbbf24', y: 920, tools: ['finance', 'website', 'marketing', 'hr', 'connect'] },
 ];
 
 const laneChipX = (i: number, n: number) => {
@@ -191,12 +192,12 @@ function VoiceButton() {
       if (!transcript) return;
       const nav = matchVoiceNav(transcript);
       if (nav) {
-        setMsg(`Heard: "${transcript}" → opening ${nav.label}`);
+        setMsg(`Heard: "${transcript}" ΓåÆ opening ${nav.label}`);
         setGoto({ label: nav.label, href: nav.href });
         window.setTimeout(() => router.push(nav.href), 350);
         return;
       }
-      setMsg(`Heard: "${transcript}" — I could not find that tool. Try a name like "Executive" or "Marketing".`);
+      setMsg(`Heard: "${transcript}" ΓÇö I could not find that tool. Try a name like "Executive" or "Marketing".`);
     };
     rec.onerror = () => {
       setMsg('Did not catch that. Try again.');
@@ -232,7 +233,7 @@ function VoiceButton() {
       )}
       <button
         onClick={toggle}
-        title="Voice commander — say a tool name to navigate"
+        title="Voice commander ΓÇö say a tool name to navigate"
         className={`group flex h-11 items-center gap-2 rounded-full border px-3.5 shadow-2xl transition-all ${
           listening
             ? 'border-red-400/60 bg-red-500/20 text-red-300 shadow-[0_0_25px_rgba(248,113,113,0.45)]'
@@ -241,7 +242,7 @@ function VoiceButton() {
       >
         {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5 text-sky-300" />}
         <span className={`hidden text-xs font-medium sm:inline ${listening ? 'animate-pulse' : ''}`}>
-          {listening ? 'Listening…' : 'Voice'}
+          {listening ? 'ListeningΓÇª' : 'Voice'}
         </span>
         {listening && <span className="h-2 w-2 animate-ping rounded-full bg-red-400" />}
       </button>
@@ -469,6 +470,7 @@ export default function CommandCenterPage() {
   const sparkPts = sparkline.map((v, i) => `${(i / 11) * 120},${40 - (v / sparkMax) * 34}`).join(' ');
 
   return (
+    <>
     <div style={{ background: '#000' }} className="min-h-[calc(100vh-6rem)] rounded-xl border border-white/10 p-4 lg:p-5">
       <VoiceButton />
       <style>{`
@@ -488,21 +490,21 @@ export default function CommandCenterPage() {
           <div>
             <h1 className="text-lg font-black tracking-tight text-white">Command Center</h1>
             <p className="text-[11px] text-gray-500">
-              {hubTotal()} tools connected in one operating flow · {ZONE_LABELS.business} + {ZONE_LABELS.life} restored
+              {hubTotal()} tools connected in one operating flow ┬╖ {ZONE_LABELS.business} + {ZONE_LABELS.life} restored
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setChimeOn((v) => !v)}
-            title={chimeOn ? 'Chime is on — click to mute' : 'Chime is muted — click to hear attention alerts'}
+            title={chimeOn ? 'Chime is on ΓÇö click to mute' : 'Chime is muted ΓÇö click to hear attention alerts'}
             className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${chimeOn ? 'border-white/10 bg-white/5 text-gray-300 hover:bg-white/10' : 'border-white/5 bg-white/[0.02] text-gray-600 hover:text-gray-400'}`}
           >
             {chimeOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
             Chime
           </button>
           <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-gray-400">
-            {HUB_TOOLS.length} core · {RESTORED_TOOLS.length} restored
+            {HUB_TOOLS.length} core ┬╖ {RESTORED_TOOLS.length} restored
           </span>
           {attentionTotal > 0 ? (
             <span className="flex items-center gap-1.5 rounded-lg border border-amber-300/50 bg-amber-400/15 px-2.5 py-1.5 text-[11px] font-bold text-amber-300 nx-blink-badge">
@@ -518,9 +520,9 @@ export default function CommandCenterPage() {
 
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
         {[
-          { icon: Activity, label: 'Mission Control', sub: 'Live execution · verify · undo', href: '/dashboard/missioncontrol', accent: 'cyan' },
-          { icon: ShieldCheck, label: 'Control Center', sub: 'Models · connectors · vault · tools', href: '/dashboard/control', accent: 'purple' },
-          { icon: Workflow, label: 'Automation Ops', sub: 'Dry-runs · approvals · verification', href: '/dashboard/automation', accent: 'emerald' },
+          { icon: Activity, label: 'Mission Control', sub: 'Live execution ┬╖ verify ┬╖ undo', href: '/dashboard/missioncontrol', accent: 'cyan' },
+          { icon: ShieldCheck, label: 'Control Center', sub: 'Models ┬╖ connectors ┬╖ vault ┬╖ tools', href: '/dashboard/control', accent: 'purple' },
+          { icon: Workflow, label: 'Automation Ops', sub: 'Dry-runs ┬╖ approvals ┬╖ verification', href: '/dashboard/automation', accent: 'emerald' },
         ].map((q) => (
           <Link
             key={q.href}
@@ -552,7 +554,7 @@ export default function CommandCenterPage() {
             </svg>
             <div>
               <p className="text-[11px] text-gray-400">
-                <span className="font-bold text-amber-300">{tasksOpen}</span> open · <span className="font-bold text-emerald-300">{tasksDone}</span> done
+                <span className="font-bold text-amber-300">{tasksOpen}</span> open ┬╖ <span className="font-bold text-emerald-300">{tasksDone}</span> done
               </p>
               <p className="text-[10px] text-gray-600">{tasksTotal} total tasks</p>
             </div>
@@ -584,10 +586,10 @@ export default function CommandCenterPage() {
                 <polygon points={`0,40 ${sparkPts} 120,40`} fill="rgba(34,211,238,0.08)" />
               </svg>
             ) : (
-              <div className="flex h-full items-center justify-center text-[11px] text-gray-600">Live sample — data appears as work flows</div>
+              <div className="flex h-full items-center justify-center text-[11px] text-gray-600">Live sample ΓÇö data appears as work flows</div>
             )}
           </div>
-          <p className="mt-1 text-[10px] text-gray-600">work created · rolling 72h</p>
+          <p className="mt-1 text-[10px] text-gray-600">work created ┬╖ rolling 72h</p>
         </div>
       </div>
 
@@ -603,7 +605,7 @@ export default function CommandCenterPage() {
                 <span className="min-w-0">
                   <span className="block truncate text-[11px] text-gray-200">{a.action}</span>
                   <span className="block truncate text-[10px] text-gray-600">
-                    {a.object || (a.actor === 'user' ? 'system' : a.actor)} · {agoStr(a.at)}
+                    {a.object || (a.actor === 'user' ? 'system' : a.actor)} ┬╖ {agoStr(a.at)}
                   </span>
                 </span>
               </div>
@@ -697,7 +699,7 @@ export default function CommandCenterPage() {
             <div key={zone.id}>
               <div className="absolute z-0 rounded-2xl border border-white/8" style={{ left: zone.x, top: zone.y, width: zone.w, height: 520, background: 'linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.004))' }}>
                 <p className="absolute left-4 top-3 text-[9px] font-bold uppercase tracking-[0.24em] text-gray-400">
-                  {zone.zone === 'business' ? `${ZONE_LABELS.business} · restored` : `${ZONE_LABELS.life} · restored`}
+                  {zone.zone === 'business' ? `${ZONE_LABELS.business} ┬╖ restored` : `${ZONE_LABELS.life} ┬╖ restored`}
                 </p>
               </div>
               {zone.toolIds.map((id, i) => {
@@ -727,7 +729,7 @@ export default function CommandCenterPage() {
                   <div className="mt-1 space-y-0.5">
                     {a.probes.map((p) => (
                       <p key={p.key} className="flex items-center gap-1 text-[10px] font-semibold text-amber-300">
-                        <Zap className="h-2.5 w-2.5" /> {p.count}× {p.label}
+                        <Zap className="h-2.5 w-2.5" /> {p.count}├ù {p.label}
                       </p>
                     ))}
                   </div>
@@ -740,9 +742,14 @@ export default function CommandCenterPage() {
       </div>
 
       <p className="mt-4 flex flex-wrap items-center gap-2 text-[10px] text-gray-600">
-        <ArrowDown className="h-3 w-3" /> Flow: CORE → Intelligence → Governance → Operations → Revenue → Business & Life tools. Ambers blink where work is waiting and a chime plays.
+        <ArrowDown className="h-3 w-3" /> Flow: CORE ΓåÆ Intelligence ΓåÆ Governance ΓåÆ Operations ΓåÆ Revenue ΓåÆ Business & Life tools. Ambers blink where work is waiting and a chime plays.
       </p>
     </div>
+
+    <div className="mt-6">
+      <SystemMapSection title="System map — scroll out to see every workflow, every tool, all three radial toolkits" />
+    </div>
+    </>
   );
 }
 
