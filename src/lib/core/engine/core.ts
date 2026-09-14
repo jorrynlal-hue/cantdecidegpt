@@ -292,6 +292,17 @@ export function createPlatformUser(ctx: Ctx, db: DB, input: { email: string; nam
   return user;
 }
 
+export function deletePlatformUser(ctx: Ctx, db: DB, workspaceId: string, userId: string): void {
+  requireRole(ctx, 'admin');
+  if (userId === ctx.user.id) throw Error('FORBIDDEN');
+  const ws = db.workspaces.find((w) => w.id === workspaceId);
+  if (!ws || !ws.memberIds.includes(userId)) throw Error('NOT_FOUND');
+  db.users = db.users.filter((u) => u.id !== userId);
+  for (const w of db.workspaces) w.memberIds = w.memberIds.filter((id) => id !== userId);
+  db.sessions = db.sessions.filter((s) => s.userId !== userId);
+  persist(db);
+}
+
 // Match an authenticated identity to an app user, creating the user + a
 // personal workspace on first sign-in so the app always has a home.
 export function ensureAppUser(db: DB, email: string, name: string, supabaseId?: string): User {

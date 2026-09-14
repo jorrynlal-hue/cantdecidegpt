@@ -248,4 +248,5 @@ export const team = {
   users: () => request<{ id: string; name: string; email: string; role: Role }[]>('/api/team/users', 'GET'),
   create: (input: { email: string; name: string; password?: string; role?: Role }) =>
     request<{ user: { id: string; name: string; email: string; role: Role } }>('/api/team/users', 'POST', input),
+  remove: (userId: string) => request<{ deleted: string }>(`/api/team/users/${userId}`, 'DELETE'),
 };
