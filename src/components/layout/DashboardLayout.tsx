@@ -10,6 +10,7 @@ import AttentionAlerts from '../platform/AttentionAlerts';
 import VoiceSystem from '../platform/VoiceSystem';
 import BrandOnboarding from '../platform/BrandOnboarding';
 import GlobalNavMenu from './GlobalNavMenu';
+import { CreateCustomLauncher } from './CreateCustomLauncher';
 import { ThemeScope } from '@/lib/theme';
 
 function UniverseBg() {
@@ -60,6 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <AttentionAlerts />
         <VoiceSystem />
         <BrandOnboarding />
+        <CreateCustomLauncher />
       </div>
     </ThemeScope>
   );

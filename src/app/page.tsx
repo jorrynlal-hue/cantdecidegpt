@@ -225,6 +225,7 @@ const NORMAL_APPS = [
 
 const THIS_SYSTEM = [
   "Brings your human services together in one connected place.",
+  "Ships AI agents that do the work — not chatbots that reply with noise.",
   "Understands the full task — not just one app.",
   "Connects messages, people, meetings, files and projects.",
   "Shows what should happen next.",
@@ -287,7 +288,7 @@ export default function Landing() {
             <div className="mx-auto max-w-6xl text-center">
               <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                 <span className="inline-flex items-center gap-2 rounded-full border border-[var(--c-accent-border)] bg-[var(--c-accent-soft)] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--c-accent-text)]">
-                  <Sparkles className="h-3.5 w-3.5" /> 100% human integrations · powerful AI help
+                  <Sparkles className="h-3.5 w-3.5" /> Human essentials × powerful AI agents — no nonsense
                 </span>
               </motion.div>
 
@@ -297,9 +298,9 @@ export default function Landing() {
                 transition={{ duration: 0.7, delay: 0.08 }}
                 className="mx-auto mt-7 max-w-5xl text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-6xl lg:text-7xl"
               >
-                Your human life, work and services —{" "}
+                Your human essentials, integrated with powerful AI tools —{" "}
                 <span className="bg-gradient-to-r from-[var(--c-accent-text)] to-[#e883ff] bg-clip-text text-transparent">
-                  connected with powerful AI help.
+                  agents that do as you ask, not reply back with nonsense.
                 </span>
               </motion.h1>
 
@@ -309,8 +310,9 @@ export default function Landing() {
                 transition={{ duration: 0.7, delay: 0.16 }}
                 className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-[var(--muted)] sm:text-lg"
               >
-                This system brings your everyday <strong className="text-white">tools, people, messages, meetings, files, projects, reminders and tasks</strong> together. The AI understands what you need, prepares and completes the work — and{" "}
-                <strong className="text-white">you stay in control</strong> before important actions happen.
+                This is not a chatbot that answers back. <strong className="text-white">Human essentials</strong> — your tools, people, messages, meetings, files, projects, reminders and tasks — live in one connected system with{" "}
+                <strong className="text-white">AI agents that actually do the work</strong>: they connect the right things, prepare the next action and move the job forward, and{" "}
+                <strong className="text-white">you stay in control</strong> before anything important happens.
               </motion.p>
 
               <motion.p
@@ -319,7 +321,7 @@ export default function Landing() {
                 transition={{ duration: 0.7, delay: 0.18 }}
                 className="mx-auto mt-4 max-w-3xl text-sm leading-relaxed text-[var(--muted)] sm:text-base"
               >
-                <span className="font-bold text-[var(--c-accent-text)]">CAN&apos;T DECIDE GPT</span> is the one AI place for everything humans manage — one person, a family, a freelancer, a team or a business. AI carries the load, you keep control. It is the first system to bring human integration back onto an online system with powerful AI help — work finders, work takers and new businesses meet on one board.
+                <span className="font-bold text-[var(--c-accent-text)]">CAN&apos;T DECIDE GPT</span> is the one AI place for everything humans manage — one person, a family, a freelancer, a team or a business. AI agents carry the load and do the work, you keep control. It is the first system to bring human integration back onto an online system with powerful AI help — work finders, work takers and new businesses meet on one board, and every worker can be paired straight into any project.
               </motion.p>
 
               <motion.p
@@ -415,6 +417,67 @@ export default function Landing() {
                   Open the live dashboard demo <ArrowRight className="h-4 w-4" />
                 </CTA>
                 <p className="mt-3 text-xs text-[var(--muted)]/80">No signup · no setup · the real system, clickable right now.</p>
+              </Reveal>
+            </div>
+          </section>
+
+          {/* ====================== SEE IT IN ACTION — REAL SCREENS ====================== */}
+          <section id="screens" className="relative px-5 py-20 sm:px-8 sm:py-28">
+            <div className="mx-auto max-w-6xl">
+              <SectionHead
+                kicker="Real screens. Real system."
+                title={<>See the dashboard <span className="bg-gradient-to-r from-[var(--c-accent-text)] to-[#e883ff] bg-clip-text text-transparent">actually doing the work.</span></>}
+                sub="No mockups, no still images of a fantasy — these are screenshots of the live system in use: the infinite system map, the project constellation, and all three radial toolkits running real tools."
+              />
+              <div className="mt-12 space-y-6">
+                {[
+                  { src: "/shots/system-map.png", t: "The infinite system map", d: "Zoom out over every workflow lane, every zone, every tool and all three radial toolkits — then zoom back in to work." },
+                  { src: "/shots/projects-space.png", t: "The projects space", d: "The floating project constellation and the free space that holds the radial toolkits, briefings and everything moving." },
+                  { src: "/shots/radial-toolkits.png", t: "All three radial tool kits", d: "Tier 1 CORE included, the $1,000 PREMIUMS and the $1,600 PRO PREMIUMS — hover a tool, open it, use it." },
+                ].map((s, i) => (
+                  <Reveal key={s.src} delay={i * 0.06}>
+                    <div className="overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[#0d0a1c]/80 backdrop-blur-xl">
+                      <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+                        <span className="ml-3 hidden font-mono text-[11px] text-gray-500 sm:block">cantdecidegpt.vercel.app — live</span>
+                        <span className="ml-auto rounded-full border border-[var(--c-accent-border)] bg-[var(--c-accent-soft)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--c-accent-text)]">
+                          Real screenshot
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <Image
+                          src={s.src}
+                          alt={`${s.t} — live dashboard screenshot`}
+                          width={1440}
+                          height={820}
+                          className="w-full border-0"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="grid gap-2 border-t border-white/5 px-5 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                        <div>
+                          <h3 className="text-sm font-bold text-white">{s.t}</h3>
+                          <p className="mt-0.5 text-xs leading-relaxed text-[var(--muted)]">{s.d}</p>
+                        </div>
+                        <a
+                          href={s.src}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--c-accent-border)] bg-[var(--c-accent-soft)] px-4 py-2 text-xs font-bold text-[var(--c-accent-text)] hover:brightness-110"
+                        >
+                          <Eye className="h-3.5 w-3.5" /> Full size
+                        </a>
+                      </div>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+              <Reveal delay={0.2} className="mt-10 text-center">
+                <CTA href="/demo">
+                  Walk around it yourself <ArrowRight className="h-4 w-4" />
+                </CTA>
               </Reveal>
             </div>
           </section>

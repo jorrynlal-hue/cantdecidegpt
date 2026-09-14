@@ -1,6 +1,8 @@
-import { DB, Ctx, WorkProfile, WorkRole, DmThread, DmMessage } from '../types';
+import { DB, Ctx, WorkProfile, WorkRole, DmThread, DmMessage, Project, Task } from '../types';
 import { now, uid, persist } from '../db';
 import { requireRole, nonEmpty, optStr, logActivity, notify } from './core';
+import { createTask, updateProject } from './work';
+import { createKnowledge } from './docs';
 import { SKILLS } from '@/lib/uiol/layer';
 
 // Work Board — the shared area where work finders and work takers meet.
@@ -235,4 +237,62 @@ export async function sendThreadMessage(ctx: Ctx, db: DB, input: { threadId: str
     link: `/dashboard/board?tab=messages`,
   });
   return m;
+}
+
+export function deleteThread(ctx: Ctx, db: DB, threadId: string): void {
+  requireRole(ctx, 'member');
+  const t = db.dmThreads.find((x) => x.id === threadId);
+  if (!t) throw Error('NOT_FOUND');
+  if (t.aId !== ctx.user.id && t.bId !== ctx.user.id) throw Error('FORBIDDEN');
+  db.dmThreads = db.dmThreads.filter((x) => x.id !== threadId);
+  persist(db);
+}
+
+// Pair a work board connection straight into one of your projects: the partner
+// joins the project, gets a task slot, and the deal agreed in chat moves into
+// the project so the work can actually get done.
+export function pairThreadToProject(
+  ctx: Ctx,
+  db: DB,
+  input: { threadId: string; projectId: string }
+): { project: Project; task: Task; thread: DmThread } {
+  requireRole(ctx, 'member');
+  const t = db.dmThreads.find((x) => x.id === input.threadId);
+  if (!t) throw Error('NOT_FOUND');
+  if (t.aId !== ctx.user.id && t.bId !== ctx.user.id) throw Error('FORBIDDEN');
+  const project = db.projects.find((x) => x.id === input.projectId && x.workspaceId === ctx.workspaceId);
+  if (!project) throw Error('NOT_FOUND');
+  const partnerId = otherSide(t, ctx.user.id);
+  const partnerName = t.aId === partnerId ? t.aName : t.bName;
+
+  const updated = updateProject(ctx, db, project.id, { memberIds: [...project.memberIds, partnerId] });
+  const task = createTask(ctx, db, {
+    title: `${partnerName} — joined via work board`,
+    description: `Connected to this project by ${ctx.user.name || 'you'} directly from the work board. Coordinate, deliver and get the work done in this project.`,
+    projectId: updated.id,
+    assigneeId: partnerId,
+    priority: 'medium',
+    status: 'todo',
+  });
+  pushMessage(db, t, ctx.user.id, `Paired this conversation with the project “${updated.name}” — working together there now.`);
+  createKnowledge(ctx, db, {
+    title: `Work board connection — ${partnerName}`,
+    kind: 'reference',
+    content: `## Paired with a project\n${partnerName} was connected to the project "${updated.name}" directly from the work board by ${ctx.user.name || 'you'}.\n\n## How it works\nThey joined as a project member, have a task slot open, and the conversation stays live here.`,
+    tags: [updated.id, 'workboard', 'connection'],
+  });
+  notify(ctx, db, partnerId, {
+    title: `${ctx.user.name || 'Someone'} brought you into a project`,
+    body: `You were connected to the project "${updated.name}".`,
+    kind: 'project',
+    link: `/dashboard/projects/${updated.id}`,
+  });
+  logActivity(ctx, db, {
+    action: 'workboard.pair',
+    result: `Paired ${partnerName} with project "${updated.name}"`,
+    objectType: 'project',
+    objectId: updated.id,
+    objectLabel: updated.name,
+  });
+  return { project: updated, task, thread: t };
 }

@@ -240,6 +240,8 @@ export const board = {
   threads: () => request<{ threads: ThreadView[] }>('/api/board/threads', 'GET'),
   thread: (id: string) => request<{ thread: DmThreadView }>(`/api/board/threads/${id}`, 'GET'),
   send: (threadId: string, text: string) => request<{ message: { id: string; from: string; text: string; at: string } }>(`/api/board/threads/${threadId}`, 'POST', { text }),
+  removeThread: (threadId: string) => request<{ deleted: boolean }>(`/api/board/threads/${threadId}`, 'DELETE'),
+  pair: (threadId: string, projectId: string) => request<{ project: { id: string; name: string }; task: unknown; thread: unknown }>('/api/board/pair', 'POST', { threadId, projectId }),
 };
 
 export const team = {
