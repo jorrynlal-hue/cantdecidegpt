@@ -58,7 +58,7 @@ export default function DecayDetectPage() {
         examples={['Give the first touch for everyone going cold', 'How do I restart a 40-day silence without feeling awkward?', 'Rank the relationships by salvage value']}
         context={context}
         prompt={(input, ctx) =>
-          `You are Decay Detect for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nFor each flagged relationship: why it matters, the exact first touch (subject + 2 lines), and the follow-up if they reply. Understated, specific, not salesy.`
+          `You are Decay Detect for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nFor each flagged relationship: why it matters, the exact first touch (subject + 2 lines), and the follow-up if they reply. Understated, specific, not salesy.`
         }
         saveTitle={(input) => `Decay warm-up — ${input.slice(0, 48)}`}
       />

@@ -1,6 +1,6 @@
 import { requireSession, ok, fail, fromError, readBody } from '@/lib/core/api/helpers';
 import { captureOrder } from '@/lib/core/paypal';
-import { setWorkspacePlan } from '@/lib/plans';
+import { setWorkspacePlan, findPlan } from '@/lib/plans';
 import { persist, uid } from '@/lib/core/db';
 
 export async function POST(req: Request) {
@@ -18,12 +18,14 @@ export async function POST(req: Request) {
       ws.settings = { ...(ws.settings ?? {}), paypalCapture: result.captureId, paypalStatus: result.status };
     }
     // record payment
+    const plan = findPlan(planId);
+    const amount = plan?.price ?? 0;
     db.payments = db.payments ?? [];
     db.payments.push({
       id: uid(),
       workspaceId: ctx.workspaceId,
       planId,
-      amount: Number(planId === 'essential' ? 1000 : planId === 'pro' ? 1600 : 0),
+      amount,
       currency: 'USD',
       provider: 'paypal',
       providerRef: result.captureId,

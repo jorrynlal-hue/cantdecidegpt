@@ -84,7 +84,7 @@ export default function InboxPage() {
           placeholder="e.g. Reply warmly, confirm the date, and ask about the invoice."
           context={context}
           prompt={(input, ctx) =>
-            `You are Inbox for the Imprint operating system. ${ctx ?? ''}\n\nInstruction: ${input}\n\nDraft the reply. Match the tone of the thread, keep it under 150 words, and make clear exactly what you are confirming or asking.`
+            `You are Inbox for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\nInstruction: ${input}\n\nDraft the reply. Match the tone of the thread, keep it under 150 words, and make clear exactly what you are confirming or asking.`
           }
           saveTitle={() => `Re: ${sel.subject}`}
           saveLabel="Save as email draft"

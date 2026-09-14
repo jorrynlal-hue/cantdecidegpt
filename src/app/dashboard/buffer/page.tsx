@@ -17,7 +17,7 @@ export default function BufferPage() {
         placeholder="e.g. I want to reply: 'Are you serious? I told you this last week.' — but I know better. Buffer it."
         examples={['My reply is heating up — cool it down', 'Rewrite this so I keep my leverage and my sleep', 'Make it firm but leave the door open']}
         prompt={(input, ctx) =>
-          `You are Buffer for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nTake the heat out: rewrite in a calm, firm register that keeps the point without escalation, then note what future-you would thank you for.`
+          `You are Buffer for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nTake the heat out: rewrite in a calm, firm register that keeps the point without escalation, then note what future-you would thank you for.`
         }
         saveTitle={(input) => `Buffered reply — ${input.slice(0, 48)}`}
       />

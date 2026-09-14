@@ -133,6 +133,10 @@ export interface Project {
   startDate?: string;
   deadline?: string;
   customerId?: string;
+  category?: string;
+  colour?: string;
+  tier?: string;
+  template?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -533,6 +537,52 @@ export interface UserSettings {
   workspaceId: string; // last active workspace
 }
 
+// Work Board: one shared area where work finders and work takers meet.
+// A "finder" lists the craft they are good at and what they can do.
+// A "taker" lists the work a business or project needs doing right now.
+// Profiles are public across the whole system so every user can connect.
+export type WorkRole = 'finder' | 'taker';
+
+export interface WorkProfile {
+  id: string;
+  workspaceId: string;
+  userId: string;
+  role: WorkRole;
+  name: string;
+  email: string;
+  fields: string[];
+  details: string;
+  resume?: string;
+  socials: string[];
+  availability?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DmMessage {
+  id: string;
+  from: string;
+  text: string;
+  at: string;
+}
+
+// Direct connect + chat thread between two users of the system.
+// Creating a thread is "connecting". aId/bId name the two people so the
+// board can be shown from either side without extra lookups.
+export interface DmThread {
+  id: string;
+  workspaceId: string;
+  aId: string;
+  aName: string;
+  bId: string;
+  bName: string;
+  profileId?: string;
+  messages: DmMessage[];
+  lastRead: Record<string, string>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DB {
   seq: number;
   workspaces: Workspace[];
@@ -567,6 +617,8 @@ export interface DB {
   providerConfigs: ProviderConfig[];
   credentials: Credential[];
   tools: Tool[];
+  workProfiles: WorkProfile[];
+  dmThreads: DmThread[];
   userSettings: UserSettings[];
   sessions: { token: string; userId: string; createdAt: string }[];
   initializedAt: string;

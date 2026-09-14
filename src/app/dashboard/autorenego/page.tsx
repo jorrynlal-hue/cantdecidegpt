@@ -17,7 +17,7 @@ export default function AutoRenegoPage() {
         placeholder="e.g. Software subscription at $120/mo, stripper of value, cancel in 12 days. Plan the renegotiation."
         examples={['$120/mo software subscription, renews in 12 days — plan the reneg', 'List 5 expenses worth renegotiating and in what order', 'Write the opener email for renegotiating my hosting bill']}
         prompt={(input, ctx) =>
-          `You are Auto-Renegotiate for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nDeliver the campaign: the opener message, the strongest leverage, the walk-away number, the follow-up sequence, and a hard date for each step. Polite, firm, factual.`
+          `You are Auto-Renegotiate for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nDeliver the campaign: the opener message, the strongest leverage, the walk-away number, the follow-up sequence, and a hard date for each step. Polite, firm, factual.`
         }
         saveTitle={(input) => `Renegotiation — ${input.slice(0, 48)}`}
       />

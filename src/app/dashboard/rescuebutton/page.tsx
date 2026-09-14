@@ -74,7 +74,7 @@ export default function RescueButtonPage() {
         examples={['Save me: top 3 actions right now', 'Which task is making everything else worse?', 'Give me a 20-minute triage plan']}
         context={context}
         prompt={(input, ctx) =>
-          `You are the Rescue Button for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nAnswer with leadership: the top 3 actions in order, why, the fastest path for each, and what can safely wait a day.`
+          `You are the Rescue Button for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nAnswer with leadership: the top 3 actions in order, why, the fastest path for each, and what can safely wait a day.`
         }
         saveTitle={(input) => `Rescue triage — ${input.slice(0, 48)}`}
       />

@@ -60,7 +60,7 @@ export default function StatusBar() {
             {executions.loading ? 'syncing…' : `last sync ${lastSync ?? '—'}`}
           </span>
           <span className="flex items-center gap-1.5">
-            {audio.enabled ? <Volume2 className={`h-3 w-3 ${quiet ? 'text-purple-300' : 'text-emerald-400'}`} /> : <VolumeX className="h-3 w-3 text-gray-500" />}
+            {audio.enabled ? <Volume2 className={`h-3 w-3 ${quiet ? 'text-[var(--c-accent-text)]' : 'text-emerald-400'}`} /> : <VolumeX className="h-3 w-3 text-gray-500" />}
             <span className={audio.enabled && !quiet ? 'text-emerald-400/90' : 'text-gray-500'}>{audioLabel}</span>
           </span>
           <span className="flex items-center gap-1.5 text-[#00D9B2]">

@@ -17,7 +17,7 @@ export default function NegotiatorPage() {
         placeholder="e.g. A client is asking for a 30% discount on a $5,000 project. I can give 10% at most, and only if paid upfront."
         examples={['Client wants 30% off a $5,000 project — draft my position', 'Renegotiating my retainer, draft the opening', 'I am buying a used car at $3,400. Script the negotiation']}
         prompt={(input, ctx) =>
-          `You are the Negotiator for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nGive the negotiator's kit: the anchor, the zone of possible agreement, the first offer you make, the script for the opener and the counter, and your walk-away line. Fair but firm.`
+          `You are the Negotiator for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nGive the negotiator's kit: the anchor, the zone of possible agreement, the first offer you make, the script for the opener and the counter, and your walk-away line. Fair but firm.`
         }
         saveTitle={(input) => `Negotiation kit — ${input.slice(0, 48)}`}
       />

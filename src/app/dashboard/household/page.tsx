@@ -83,7 +83,7 @@ export default function HouseholdPage() {
           placeholder="e.g. Split this week's household load fairly between two people."
           examples={['Split this week’s load fairly', 'Build a Sunday night chore plan', 'What can be automated, delegated or dropped?']}
           prompt={(input, ctx) =>
-            `You are Household Ops for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nProduce the week plan: a fair split across the people in the house, when each task runs, and what can be automated, delegated or dropped. Keep it simple enough to actually follow.`
+            `You are Household Ops for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nProduce the week plan: a fair split across the people in the house, when each task runs, and what can be automated, delegated or dropped. Keep it simple enough to actually follow.`
           }
           saveTitle={(input) => `Household plan — ${input.slice(0, 48)}`}
         />

@@ -65,9 +65,11 @@ export const SITE_PLANS: SitePlan[] = [
     name: "The $1,000 Special",
     price: 1000,
     cadence: "/month",
-    tagline: "Essentials pack — the core operating system with basic tools & services, plus every $1,000 special included.",
+    tagline: "Essentials pack — the core operating system with basic tools & services, the $1,000 special radial toolkit, and up to 3 projects included.",
     seats: "1 seat",
     features: [
+      "Up to 3 projects at a time",
+      "The $1,000 special radial toolkit — 11 premium life tools included",
       "Universal AI access (GPT-4, Claude, Gemini, Groq)",
       "Performer — describe it, it runs it",
       "Connect — Instagram, Facebook, LinkedIn, X, TikTok, YouTube, Google",
@@ -98,10 +100,12 @@ export const SITE_PLANS: SitePlan[] = [
     name: "The $1,600 Special",
     price: 1600,
     cadence: "/month",
-    tagline: "Everything in the essentials pack, plus the $1,600 special with over $1,500 of new operator tools.",
+    tagline: "Everything in the essentials pack, plus the $1,600 special radial toolkit with over $1,500 of new operator tools and up to 5 projects.",
     seats: "Everything + teams",
     features: [
       "Everything in the $1,000 Essentials pack",
+      "Up to 5 projects at a time",
+      "The $1,600 special radial toolkit — 19 premium operator tools included",
       "J Worker — dual-engine automation (browser + API)",
       "Executive Command Center — pricing, renegotiation, competitor shadow",
       "All modules — Sales, Marketing, Customer, Finance, HR, Ops, Analytics, Reports",
@@ -112,13 +116,13 @@ export const SITE_PLANS: SitePlan[] = [
     notIncluded: [],
     specials: {
       label: "$1,600 Specials — operator stack",
-      lead: "19 pro-premium operator tools — the new $1,500 toolset, all included",
+      lead: "19 pro-premium operator tools — the new $1,600 toolset, all included",
       tools: OPERATOR_TOOLS,
     },
     cta: "Get the $1,600 Special",
     featured: true,
-    bonus: "Over $1,500 of new tools included",
-    note: "Upgraded from the $1,550 special.",
+    bonus: "The full $1,600 operator toolset included",
+    note: "Upgraded to the $1,600 operator plan.",
   },
 ];
 

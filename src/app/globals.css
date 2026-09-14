@@ -15,3 +15,141 @@
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
+
+:root {
+  --c-accent: #8b5cf6;
+  --c-accent-strong: #7c3aed;
+  --c-accent-soft: rgba(139, 92, 246, 0.14);
+  --c-accent-border: rgba(139, 92, 246, 0.32);
+  --c-accent-text: #8b5cf6;
+  --c-accent-contrast: #ffffff;
+  --c-glow: 0 0 9px rgba(139, 92, 246, 0.45), 0 0 18px rgba(139, 92, 246, 0.22);
+  --glass-bg: rgba(11, 13, 21, 0.82);
+  --glass-bg-solid: rgba(13, 15, 24, 0.88);
+  --glass-bg-strong: rgba(16, 18, 28, 0.92);
+  --glass-border: rgba(255, 255, 255, 0.081);
+  --glass-blur: 18px;
+  --app-bg: #04050a;
+  --surface: rgba(11, 13, 21, 0.85);
+  --panel: rgba(11, 13, 21, 0.85);
+  --input-bg: rgba(7, 8, 13, 0.84);
+  --border: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 255, 255, 0.58);
+  --text-soft: rgba(255, 255, 255, 0.84);
+  --text-main: rgba(255, 255, 255, 0.97);
+  --c-anim: 1;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--text-main);
+}
+
+::selection {
+  background: var(--c-accent-soft);
+  color: var(--text-main);
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+.accent-text {
+  color: var(--c-accent-text);
+}
+
+.accent-bg {
+  background: var(--c-accent);
+  color: var(--c-accent-contrast);
+}
+
+.accent-soft {
+  background: var(--c-accent-soft);
+  border: 1px solid var(--c-accent-border);
+  color: var(--c-accent-text);
+}
+
+.accent-glow {
+  box-shadow: var(--c-glow);
+}
+
+.animate-gate {
+  --dur: 220ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-gate {
+    --dur: 0ms;
+  }
+}
+body[data-brand] {
+  --brand-mark: attr(data-brand);
+}
+
+/* ---- SYSTEM MAP SURFACE ---- */
+.map-grid {
+  background-image: radial-gradient(rgba(130, 145, 200, 0.055) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.jbos-grid-bg {
+  background-image: radial-gradient(rgba(120, 140, 255, 0.10) 1.1px, transparent 1.1px);
+  background-size: 22px 22px;
+}
+
+@keyframes jbosBreathe {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.jbos-breathe {
+  animation: jbosBreathe 6s ease-in-out infinite;
+}
+
+@keyframes jbosSpin {
+  to { transform: rotate(360deg); }
+}
+.jbos-active-ring {
+  animation: jbosSpin 34s linear infinite;
+}
+
+.jbos-core-gradient {
+  background: radial-gradient(120% 120% at 30% 25%, rgba(24, 223, 160, 0.16) 0%, rgba(34, 118, 217, 0.22) 42%, rgba(10, 13, 22, 0.98) 86%);
+}
+.jbos-core-glow {
+  box-shadow: 0 0 44px rgba(34, 118, 217, 0.28), inset 0 0 30px rgba(24, 223, 160, 0.08);
+}
+@keyframes jbosCoreBreathe {
+  0%, 100% { box-shadow: 0 0 30px rgba(34, 118, 217, 0.2); }
+  50% { box-shadow: 0 0 52px rgba(34, 118, 217, 0.4); }
+}
+.jbos-core-breathe {
+  animation: jbosCoreBreathe 4.5s ease-in-out infinite;
+}
+
+@keyframes starblink {
+  0%, 100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.9));
+  }
+  50% {
+    opacity: 0.35;
+    filter: drop-shadow(0 0 1px rgba(56, 189, 248, 0.35));
+  }
+}
+.blink-star {
+  animation: starblink 1.15s ease-in-out infinite;
+}

@@ -17,7 +17,7 @@ export default function ResearcherPage() {
         placeholder="e.g. Research the market for small-business bookkeeping AI assistants and who the main players are."
         examples={['Brief me on the AI bookkeeping market and its players', 'Deep dive: how competitors price virtual CFO services', 'Prepare a pre-meeting brief on a prospect company']}
         prompt={(input, ctx) =>
-          `You are the Researcher for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nProduce a structured brief: the landscape, the key players with one line each, the dynamics that matter, the open questions, and 3 sources worth checking. Label uncertainty clearly.`
+          `You are the Researcher for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nProduce a structured brief: the landscape, the key players with one line each, the dynamics that matter, the open questions, and 3 sources worth checking. Label uncertainty clearly.`
         }
         saveTitle={(input) => `Research brief — ${input.slice(0, 48)}`}
         kind="reference"

@@ -17,7 +17,7 @@ export default function FixerPage() {
         placeholder="e.g. The office router drops every time it rains and no one can work. Fix it."
         examples={['Office wifi dies every time it rains — fix it', 'A client is slow-paying on repeat. Resolve it', 'Automate the report I manually send every Monday']}
         prompt={(input, ctx) =>
-          `You are the Fixer for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nFix it: the likeliest cause, the ordered steps to resolve it (starting with the cheapest), the message to send if people are involved, and how to prevent it returning.`
+          `You are the Fixer for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nFix it: the likeliest cause, the ordered steps to resolve it (starting with the cheapest), the message to send if people are involved, and how to prevent it returning.`
         }
         saveTitle={(input) => `Fix — ${input.slice(0, 48)}`}
       />

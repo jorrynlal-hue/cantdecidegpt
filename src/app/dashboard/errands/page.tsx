@@ -81,7 +81,7 @@ export default function ErrandsPage() {
         examples={['Sequence these into one efficient run', 'Group the errands by area, then by stop order', 'Tell me which errands can wait']}
         context={context}
         prompt={(input, ctx) =>
-          `You are Errand Brain for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nSequence the run: the route order with a one-line why, grouping by area, which stops combine naturally, and which errands can wait. Keep it to one trip.`
+          `You are Errand Brain for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nSequence the run: the route order with a one-line why, grouping by area, which stops combine naturally, and which errands can wait. Keep it to one trip.`
         }
         saveTitle={(input) => `Errand run — ${input.slice(0, 48)}`}
       />

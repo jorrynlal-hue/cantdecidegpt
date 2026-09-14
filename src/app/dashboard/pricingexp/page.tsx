@@ -78,7 +78,7 @@ export default function PricingPage() {
           placeholder="e.g. Recommend the next pricing experiment and its guardrails."
           examples={['Recommend the next pricing experiment', 'Design an A/B test with clear metrics and guardrails', 'What should I test first — anchoring or bundling?']}
           prompt={(input, ctx) =>
-            `You are Pricing Experiments for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nFor the experiment: the hypothesis, the exact test design, the metric that decides it, and hard guardrails (what would stop it). Be skeptical of your own recommendation.`
+            `You are Pricing Experiments for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nFor the experiment: the hypothesis, the exact test design, the metric that decides it, and hard guardrails (what would stop it). Be skeptical of your own recommendation.`
           }
           saveTitle={(input) => `Pricing experiment — ${input.slice(0, 48)}`}
         />

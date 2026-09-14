@@ -4,6 +4,7 @@
 // `enabled` switch, volume, quiet hours and prefers-reduced-motion.
 import { ALL_TOOLS, type HubTool, type RestoredTool } from '@/lib/hub';
 import { loadAudioPrefs, inQuietHours, prefersReducedAudio, playTing, DEFAULT_WAKE_WORD } from '@/lib/ting';
+import { THEME_PRESETS, type ThemePreset } from '@/lib/theme';
 
 export type { AudioPrefs } from '@/lib/ting';
 export { DEFAULT_WAKE_WORD };
@@ -145,7 +146,10 @@ const VOICE_ROUTES: VoiceRoute[] = [
   { match: (t) => /overview|command center|dashboard/.test(t), label: 'Command Center', href: '/dashboard' },
   { match: (t) => /workflow builder|workflow canvas|the canvas|build a workflow/.test(t), label: 'Workflow Builder', href: '/dashboard/workspace' },
   { match: (t) => /premium radial|radial two|radial 2|radial 0 ?2/.test(t), label: 'Premium Radial', href: '/dashboard/radial02' },
+  { match: (t) => /special radial|radial three|radial 3|one ?six ?hundred|one ?thousand ?six ?hundred/.test(t), label: 'Special Radial 03', href: '/dashboard/radial03' },
   { match: (t) => /radial board|toolkit board|radial system|radial one|radial 1/.test(t), label: 'Radial Board', href: '/dashboard/radial' },
+  { match: (t) => /projects|project board|project dashboard|project portfolio/.test(t), label: 'Projects', href: '/dashboard/projects' },
+  { match: (t) => /ai workers?|my workers?|agents?/.test(t), label: 'AI Worker', href: '/dashboard/aiworker' },
   { match: (t) => /attention|what needs me|needs attention/.test(t), label: 'Attention Required', href: '/dashboard/attention' },
   { match: (t) => /toolkits?/.test(t), label: 'Radial Toolkits', href: '/dashboard/toolkits' },
   { match: (t) => /calendar|schedule|appointments/.test(t), label: 'Calendar', href: '/dashboard/calendar' },
@@ -161,6 +165,8 @@ const VOICE_ROUTES: VoiceRoute[] = [
   { match: (t) => /tasks?|to ?do/.test(t), label: 'Tasks', href: '/dashboard/tasks' },
   { match: (t) => /voice|dictation|transcribe/.test(t), label: 'Voice Studio', href: '/dashboard/voice' },
   { match: (t) => /assistant|ai studio|run (the )?assistant/.test(t), label: 'AI Studio', href: '/dashboard/ai' },
+  { match: (t) => /work ?board|find work|register (as a )?(work )?finder|need people|hire|work taker/.test(t), label: 'Work Board', href: '/dashboard/board' },
+  { match: (t) => /(open|show|read|check) (my )?messages|connect.*chat|inbox chat/.test(t), label: 'Work Messages', href: '/dashboard/board?tab=messages' },
 ];
 
 export function matchVoiceNav(raw: string): NavTarget | null {
@@ -178,6 +184,30 @@ export function matchVoiceNav(raw: string): NavTarget | null {
   );
   if (tool) return { label: tool.name, href: tool.href };
   return null;
+}
+
+// ---------------------------------------------------------- theme colour intents
+
+const COLOUR_ALIASES: Record<string, string> = {
+  purple: 'royal-purple', violet: 'royal-purple',
+  cyan: 'cid-cyan', teal: 'cid-cyan',
+  pink: 'miami-pink', magenta: 'miami-pink',
+  mint: 'mint',
+  blue: 'omega-blue',
+  amber: 'gold-amber', gold: 'gold-amber', yellow: 'gold-amber',
+  rose: 'rose', red: 'rose',
+  lime: 'mint-chip',
+  green: 'android',
+  white: 'ghost',
+};
+
+export function matchColourIntent(text: string): ThemePreset | undefined {
+  const t = text.toLowerCase();
+  if (!/colour|color|theme|make it|switch/.test(t)) return undefined;
+  for (const [alias, id] of Object.entries(COLOUR_ALIASES)) {
+    if (new RegExp(`\\b${alias}\\b`).test(t)) return THEME_PRESETS.find((p) => p.id === id);
+  }
+  return THEME_PRESETS.find((p) => new RegExp(`\\b${p.name.toLowerCase()}\\b`).test(t));
 }
 
 // --------------------------------------------------------------- speech out

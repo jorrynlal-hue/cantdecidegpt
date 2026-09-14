@@ -2,6 +2,7 @@ import { DB, Ctx, Task, Project, TaskStatus, Priority, ProjectStatus } from '../
 import { now, uid, persist } from '../db';
 import { requireRole, listRows, nonEmpty, optStr, logActivity, notify } from './core';
 import { emitEvent } from '../events';
+import { getWorkspacePlan } from '@/lib/plans';
 
 const TASK_STATUSES: TaskStatus[] = ['todo', 'in_progress', 'review', 'completed', 'cancelled'];
 const PRIORITIES: Priority[] = ['low', 'medium', 'high', 'urgent'];
@@ -186,6 +187,8 @@ export function getProject(db: DB, workspaceId: string, projectId: string): Proj
   return p;
 }
 
+export const PROJECT_PLAN_LIMITS: Record<string, number> = { essential: 3, pro: 5 };
+
 export interface ProjectInput {
   name: string;
   description?: string;
@@ -195,10 +198,21 @@ export interface ProjectInput {
   startDate?: string;
   deadline?: string;
   customerId?: string;
+  category?: string;
+  colour?: string;
+  tier?: string;
+  template?: string;
 }
 
 export function createProject(ctx: Ctx, db: DB, input: ProjectInput): Project {
   requireRole(ctx, 'member');
+  const ws = db.workspaces.find((w) => w.id === ctx.workspaceId);
+  const plan = (ws ? getWorkspacePlan(ws) : 'pro') as keyof typeof PROJECT_PLAN_LIMITS;
+  const limit = PROJECT_PLAN_LIMITS[plan] ?? PROJECT_PLAN_LIMITS.pro;
+  const used = db.projects.filter((p) => p.workspaceId === ctx.workspaceId).length;
+  if (used >= limit) {
+    throw Error(`PLAN_LIMIT:${plan}:${limit}`);
+  }
   const project: Project = {
     id: uid(),
     workspaceId: ctx.workspaceId,
@@ -213,6 +227,10 @@ export function createProject(ctx: Ctx, db: DB, input: ProjectInput): Project {
     startDate: optStr(input.startDate),
     deadline: optStr(input.deadline),
     customerId: optStr(input.customerId),
+    category: optStr(input.category),
+    colour: optStr(input.colour),
+    tier: optStr(input.tier),
+    template: optStr(input.template),
     createdAt: now(),
     updatedAt: now(),
   };
@@ -233,6 +251,10 @@ export function updateProject(ctx: Ctx, db: DB, projectId: string, patch: Partia
   if (patch.ownerId !== undefined) p.ownerId = optStr(patch.ownerId) ?? p.ownerId;
   if (patch.memberIds !== undefined) p.memberIds = [...new Set(patch.memberIds)];
   if (patch.customerId !== undefined) p.customerId = optStr(patch.customerId);
+  if (patch.category !== undefined) p.category = optStr(patch.category);
+  if (patch.colour !== undefined) p.colour = optStr(patch.colour);
+  if (patch.tier !== undefined) p.tier = optStr(patch.tier);
+  if (patch.template !== undefined) p.template = optStr(patch.template);
   p.updatedAt = now();
   logActivity(ctx, db, { action: 'project.update', result: `Updated project "${p.name}"`, objectType: 'project', objectId: p.id, objectLabel: p.name });
   persist(db);

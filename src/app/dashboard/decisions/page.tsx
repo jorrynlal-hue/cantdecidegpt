@@ -17,7 +17,7 @@ export default function DecisionsPage() {
         placeholder="e.g. Take a $35k full-time role or keep building my own thing which makes $1,500/mo and is growing."
         examples={['Take the job or keep building my own thing?', 'Should I raise prices now or after the holiday rush?', 'Decision between two short and one long commitment']}
         prompt={(input, ctx) =>
-          `You are the Decision Compass for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nFrame the decision: the real options, what each protects and costs, the regret question (in a year, which choice do I regret less), what more info would change nothing, and the actual pick.`
+          `You are the Decision Compass for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nFrame the decision: the real options, what each protects and costs, the regret question (in a year, which choice do I regret less), what more info would change nothing, and the actual pick.`
         }
         saveTitle={(input) => `Decision — ${input.slice(0, 48)}`}
       />

@@ -60,7 +60,7 @@ export default function RootCausePage() {
         examples={['Deals stall at proposal — why?', 'Revenue is flat three months running. Root cause?', 'Tasks pile up every Friday. What is really happening?']}
         context={context}
         prompt={(input, ctx) =>
-          `You are Root Cause for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nTrace like a detective: list 3 plausible causes, mark the most likely one, state the root cause in one sentence, and name the smallest fix that would collapse the problem.`
+          `You are Root Cause for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nTrace like a detective: list 3 plausible causes, mark the most likely one, state the root cause in one sentence, and name the smallest fix that would collapse the problem.`
         }
         saveTitle={(input) => `Root cause — ${input.slice(0, 48)}`}
         kind="reference"

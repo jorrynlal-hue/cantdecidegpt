@@ -2,20 +2,25 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Loader2, Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { auth } from '@/lib/core/client';
 
 const demoUsers = [
-  { email: 'owner@nexus.local', role: 'Owner' },
-  { email: 'admin@nexus.local', role: 'Admin' },
-  { email: 'manager@nexus.local', role: 'Manager' },
+  { email: 'owner@nexus.local', role: 'Admin' },
   { email: 'member@nexus.local', role: 'Member' },
   { email: 'viewer@nexus.local', role: 'Viewer' },
 ];
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup'>(() => {
+    if (typeof window !== 'undefined') {
+      const m = new URLSearchParams(window.location.search).get('mode');
+      if (m === 'signup' || m === 'signin') return m;
+    }
+    return 'signin';
+  });
   const [email, setEmail] = useState('owner@nexus.local');
   const [password, setPassword] = useState('password');
   const [name, setName] = useState('');
@@ -49,7 +54,7 @@ export default function LoginPage() {
       } else {
         await auth.login(email.trim(), password);
       }
-      router.push('/dashboard/platform');
+      router.push('/dashboard/onboard');
       router.refresh();
     } catch (err) {
       setError((err as Error).message);
@@ -61,10 +66,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#09090f] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center mb-3">
-            <Sparkles className="w-6 h-6 text-white" />
-          </div>
-          <h1 className="text-xl font-bold text-white">Nexus Platform</h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/cantdecide-gpt-logo.png" alt="CAN'T DECIDE GPT logo" className="h-14 w-14 rounded-2xl object-cover mb-3" />
+          <h1 className="text-xl font-bold text-white">CAN&apos;T DECIDE GPT</h1>
           <p className="text-sm text-gray-500 mt-1">{mode === 'signin' ? 'Sign in to your workspace' : 'Create your account'}</p>
         </div>
 
@@ -152,6 +156,10 @@ export default function LoginPage() {
           </div>
         </div>
         )}
+
+        <Link href="/" className="mt-6 flex items-center justify-center gap-1.5 text-xs text-gray-500 transition-colors hover:text-white">
+          <ArrowLeft className="h-3.5 w-3.5" /> Return to CAN&apos;T DECIDE GPT
+        </Link>
       </div>
     </div>
   );

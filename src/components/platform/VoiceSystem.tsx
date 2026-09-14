@@ -7,6 +7,7 @@ import { Mic, MicOff, Settings, Sparkles } from 'lucide-react';
 import {
   createRecognition,
   matchVoiceNav,
+  matchColourIntent,
   splitAfterWake,
   wakeWordsOf,
   cleanSpeech,
@@ -21,6 +22,7 @@ import {
   type SpeechRecognitionLike,
 } from '@/lib/voice';
 import { loadAudioPrefs } from '@/lib/ting';
+import { useTheme } from '@/lib/theme';
 import { ai } from '@/lib/core/client';
 
 type Phase = 'off' | 'armed' | 'woken' | 'busy';
@@ -34,6 +36,7 @@ const LABELS: Record<Phase, string> = {
 
 export default function VoiceSystem() {
   const router = useRouter();
+  const { setTheme } = useTheme();
   const [prefs, setPrefs] = useState(() => (typeof window === 'undefined' ? null : loadAudioPrefs()));
   const supported = voiceSupported();
   const [phase, setPhase] = useState<Phase>('off');
@@ -148,6 +151,26 @@ export default function VoiceSystem() {
     setReply('');
     setError('');
     setHeard(text);
+    const upload = (p: 'open' | 'close') => {
+      const done = p === 'open';
+      setReply(done ? 'Sidebar expanded.' : 'Sidebar collapsed.');
+      speak(done ? 'Sidebar expanded.' : 'Sidebar collapsed.');
+      window.dispatchEvent(new Event(done ? 'cdg-sidebar-open' : 'cdg-sidebar-close'));
+      setPh('armed');
+      return true;
+    };
+    if (/\b(open|expand|show|widen)\b.*\b(col?lapsed )?(side ?bar|menu)\b|col?lapsed side ?bar/.test(text)) return upload('open');
+    if (/\b(close|collapse|hide|shrink)\b.*\b(side ?bar|menu)\b|col?lapse the side ?bar/.test(text)) return upload('close');
+
+    const colour = matchColourIntent(text);
+    if (colour) {
+      setTheme({ presetId: colour.id, accent: colour.accent, strong: colour.strong });
+      setReply(`Colour set to ${colour.name}.`);
+      speak(`Colour set to ${colour.name}.`);
+      setPh('armed');
+      return;
+    }
+
     const nav = matchVoiceNav(text);
     if (nav) {
       setReply(`Opening ${nav.label}`);

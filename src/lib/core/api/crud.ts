@@ -42,9 +42,9 @@ export const crud: Record<string, CrudDef> = {
   },
   projects: {
     list: (db, ws, q) => work.listProjects(db, ws, q.q),
-    create: (ctx, db, b) => work.createProject(ctx, db, { name: String(b.name ?? ''), description: b.description as string, ownerId: String(b.ownerId ?? ''), memberIds: b.memberIds as string[] | undefined, status: b.status as never, startDate: b.startDate as string, deadline: b.deadline as string, customerId: b.customerId as string }),
+    create: (ctx, db, b) => work.createProject(ctx, db, { name: String(b.name ?? ''), description: b.description as string, ownerId: String(b.ownerId ?? ''), memberIds: b.memberIds as string[] | undefined, status: b.status as never, startDate: b.startDate as string, deadline: b.deadline as string, customerId: b.customerId as string, category: String(b.category ?? ''), colour: String(b.colour ?? ''), tier: String(b.tier ?? ''), template: String(b.template ?? '') }),
     get: (db, ws, id) => work.getProject(db, ws, id),
-    update: (ctx, db, id, p) => work.updateProject(ctx, db, id, { name: p.name as string, description: p.description as string, status: p.status as never, startDate: p.startDate as string, deadline: p.deadline as string, ownerId: p.ownerId as string, memberIds: p.memberIds as string[] | undefined, customerId: p.customerId as string }),
+    update: (ctx, db, id, p) => work.updateProject(ctx, db, id, { name: p.name as string, description: p.description as string, status: p.status as never, startDate: p.startDate as string, deadline: p.deadline as string, ownerId: p.ownerId as string, memberIds: p.memberIds as string[] | undefined, customerId: p.customerId as string, category: p.category as string, colour: p.colour as string, tier: p.tier as string, template: p.template as string }),
     remove: (ctx, db, id) => work.deleteProject(ctx, db, id),
   },
   customers: {

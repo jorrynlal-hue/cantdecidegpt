@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Loader2, X } from 'lucide-react';
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-xl border border-white/8 bg-[#101018] ${className}`}>{children}</div>;
+  return <div className={`glass rounded-xl ${className}`}>{children}</div>;
 }
 
 export function CardHeader({ title, sub, right }: { title: string; sub?: string; right?: ReactNode }) {
@@ -21,10 +21,10 @@ export function CardHeader({ title, sub, right }: { title: string; sub?: string;
 
 export function Stat({ label, value, hint, tone = 'default' }: { label: string; value: ReactNode; hint?: string; tone?: 'default' | 'good' | 'warn' | 'accent' }) {
   const tones: Record<string, string> = {
-    default: 'text-white',
+    default: 'text-[var(--text-main)]',
     good: 'text-emerald-400',
     warn: 'text-amber-400',
-    accent: 'text-purple-400',
+    accent: 'text-[var(--c-accent-text)]',
   };
   return (
     <Card className="p-4">
@@ -38,7 +38,7 @@ export function Stat({ label, value, hint, tone = 'default' }: { label: string; 
 export function Badge({ children, tone = 'gray' }: { children: ReactNode; tone?: 'gray' | 'purple' | 'green' | 'amber' | 'red' | 'blue' }) {
   const tones: Record<string, string> = {
     gray: 'bg-white/8 text-gray-300 border-white/10',
-    purple: 'bg-purple-500/15 text-purple-300 border-purple-500/25',
+    purple: 'bg-[var(--c-accent-soft)] text-[var(--c-accent-text)] border-[var(--c-accent-border)]',
     green: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
     amber: 'bg-amber-500/15 text-amber-300 border-amber-500/25',
     red: 'bg-rose-500/15 text-rose-300 border-rose-500/25',
@@ -49,8 +49,8 @@ export function Badge({ children, tone = 'gray' }: { children: ReactNode; tone?:
 
 export function Btn({ children, onClick, kind = 'primary', small, disabled, type = 'button', className = '' }: { children: ReactNode; onClick?: () => void; kind?: 'primary' | 'outline' | 'solid' | 'ghost' | 'danger'; small?: boolean; disabled?: boolean; type?: 'button' | 'submit'; className?: string }) {
   const kinds = {
-    primary: 'bg-purple-600 hover:bg-purple-500 text-white border-purple-500/40',
-    solid: 'bg-purple-600 hover:bg-purple-500 text-white border-purple-500/40',
+    primary: 'bg-[var(--c-accent)] hover:bg-[var(--c-accent-strong)] text-[var(--c-accent-contrast)] border-[var(--c-accent-border)] shadow-[var(--c-glow)]',
+    solid: 'bg-[var(--c-accent)] hover:bg-[var(--c-accent-strong)] text-[var(--c-accent-contrast)] border-[var(--c-accent-border)]',
     outline: 'bg-transparent hover:bg-white/5 text-gray-200 border-white/15',
     ghost: 'bg-white/5 hover:bg-white/10 text-gray-200 border-white/10',
     danger: 'bg-rose-600/15 hover:bg-rose-600/25 text-rose-300 border-rose-600/30',
@@ -75,7 +75,7 @@ export function Input({ value, onChange, readOnly, placeholder, type = 'text', c
       onChange={(e) => onChange?.(e.target.value)}
       readOnly={readOnly}
       placeholder={placeholder}
-      className={`w-full rounded-lg border border-white/10 bg-[#0b0b12] px-3 py-2 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 ${className}`}
+      className={`w-full rounded-lg border border-white/10 bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text-main)] placeholder:text-gray-600 outline-none focus:border-[var(--c-accent-border)] ${className}`}
     />
   );
 }
@@ -87,7 +87,7 @@ export function Textarea({ value, onChange, placeholder, rows = 3, className = '
       onChange={(e) => onChange?.(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className={`w-full rounded-lg border border-white/10 bg-[#0b0b12] px-3 py-2 text-sm text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 resize-y ${className}`}
+      className={`w-full rounded-lg border border-white/10 bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text-main)] placeholder:text-gray-600 outline-none focus:border-[var(--c-accent-border)] resize-y ${className}`}
     />
   );
 }
@@ -97,7 +97,7 @@ export function Select({ value, onChange, options, className = '' }: { value?: s
     <select
       value={value ?? ''}
       onChange={(e) => onChange?.(e.target.value)}
-      className={`rounded-lg border border-white/10 bg-[#0b0b12] px-3 py-2 text-sm text-white outline-none focus:border-purple-500/50 ${className}`}
+      className={`rounded-lg border border-white/10 bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text-main)] outline-none focus:border-[var(--c-accent-border)] ${className}`}
     >
       {options.map((o) => (
         <option key={o.value} value={o.value} className="bg-[#0b0b12]">
@@ -137,7 +137,7 @@ export function Td({ children, className = '' }: { children?: ReactNode; classNa
 export function Spinner({ label }: { label?: string }) {
   return (
     <div className="flex items-center justify-center gap-2 py-10 text-gray-500">
-      <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+      <Loader2 className="w-4 h-4 animate-spin text-[var(--c-accent-text)]" />
       {label ? <span className="text-xs">{label}</span> : null}
     </div>
   );
@@ -147,7 +147,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-sm p-4 pt-16" onClick={onClose}>
-      <div className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} rounded-xl border border-white/10 bg-[#11111a] shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+      <div className={`glass-strong w-full ${wide ? 'max-w-2xl' : 'max-w-md'} rounded-xl shadow-2xl`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
           <h3 className="text-sm font-semibold text-white">{title}</h3>
           <button onClick={onClose} className="p-1 rounded-md text-gray-500 hover:text-white hover:bg-white/5">

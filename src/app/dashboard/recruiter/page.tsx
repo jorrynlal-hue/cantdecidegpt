@@ -37,7 +37,7 @@ export default function RecruiterPage() {
         placeholder="e.g. Looking for a part-time marketer who can run our newsletter and Instagram, budget around $800/month."
         examples={['Write a role brief for a part-time marketer', 'Give me 5 screening questions for a virtual assistant', 'Draft a job post for a freelance web developer']}
         prompt={(input, ctx) =>
-          `You are the Recruiter for the Imprint operating system. ${ctx ?? ''}\n\nThe role to fill: ${input}\n\nProduce: (1) a one-paragraph role brief, (2) 5–7 screening questions, (3) what to look for in answers, (4) a 5-step hiring checklist. Keep it practical for a small team.`
+          `You are the Recruiter for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\nThe role to fill: ${input}\n\nProduce: (1) a one-paragraph role brief, (2) 5–7 screening questions, (3) what to look for in answers, (4) a 5-step hiring checklist. Keep it practical for a small team.`
         }
         saveTitle={(input) => `Role brief — ${input.slice(0, 48)}`}
       />

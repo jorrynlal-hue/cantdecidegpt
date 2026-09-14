@@ -112,7 +112,7 @@ export default function CalendarPage() {
         examples={['Plan the week, protecting focus blocks first', 'Find 3 slots this week for deep work between meetings', 'Sequence my tasks by deadline from today']}
         context={planContext || undefined}
         prompt={(input, ctx) =>
-          `You are the Scheduler for the Imprint operating system. ${ctx ? `${ctx}\n\n` : ''}Instructions from the user: ${input}\n\nGive: (1) a day-by-day plan, (2) protected focus blocks, (3) the single most important outcome this week. Be concrete and realistic.`
+          `You are the Scheduler for the CAN'T DECIDE GPT operating system. ${ctx ? `${ctx}\n\n` : ''}Instructions from the user: ${input}\n\nGive: (1) a day-by-day plan, (2) protected focus blocks, (3) the single most important outcome this week. Be concrete and realistic.`
         }
         saveTitle={(input) => `Weekly plan — ${input.slice(0, 48)}`}
       />

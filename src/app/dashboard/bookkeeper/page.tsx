@@ -65,7 +65,7 @@ export default function BookkeeperPage() {
         examples={['Summarize my financial position in plain English', 'What is my biggest expense and is it a problem?', 'Write a simple monthly owner memo']}
         context={context}
         prompt={(input, ctx) =>
-          `You are the Bookkeeper for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nExplain the books in plain, honest language: the numbers agree with what is shown, call out the one thing worth attention, and suggest one small improvement. No accounting jargon.`
+          `You are the Bookkeeper for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nExplain the books in plain, honest language: the numbers agree with what is shown, call out the one thing worth attention, and suggest one small improvement. No accounting jargon.`
         }
         saveTitle={(input) => `Books memo — ${input.slice(0, 48)}`}
         kind="reference"

@@ -64,6 +64,8 @@ export function freshDB(): DB {
     providerConfigs: [],
     credentials: [],
     tools: [],
+    workProfiles: [],
+    dmThreads: [],
     userSettings: [],
     sessions: [],
     initializedAt: now(),
@@ -105,19 +107,6 @@ function seedHumansInsights(db: DB): void {
       focus: 'Scaling client delivery without losing craft',
       skills: ['Strategy', 'Client relationships', 'Operations'],
       aiAssist: ['Pricing experiments', 'Shadow Founder briefs', 'Weekly ops'],
-      lastSeen: t,
-      createdAt: t,
-    },
-    {
-      id: 'hum-riley',
-      workspaceId: 'ws-default',
-      name: 'Riley Admin',
-      role: 'Systems & Automation',
-      email: 'admin@nexus.local',
-      status: 'away',
-      focus: 'Making automations actually run themselves',
-      skills: ['Automation', 'Workflows', 'Tooling'],
-      aiAssist: ['Workflow debugging', 'Auto-renegotiate', 'Bookkeeping'],
       lastSeen: t,
       createdAt: t,
     }
@@ -218,16 +207,8 @@ function seed(db: DB): void {
     id: 'u-admin',
     email: 'admin@nexus.local',
     passwordHash: hashPassword('password'),
-    name: 'Riley Admin',
-    role: 'admin',
-    createdAt: now(),
-  };
-  const manager: User = {
-    id: 'u-manager',
-    email: 'manager@nexus.local',
-    passwordHash: hashPassword('password'),
-    name: 'Morgan Manager',
-    role: 'manager',
+    name: 'Administrator',
+    role: 'owner',
     createdAt: now(),
   };
   const member: User = {
@@ -246,14 +227,14 @@ function seed(db: DB): void {
     role: 'viewer',
     createdAt: now(),
   };
-  db.users.push(owner, admin, manager, member, viewer);
+  db.users.push(owner, admin, member, viewer);
 
   const ws: Workspace = {
     id: 'ws-default',
     name: 'Nexus HQ',
     slug: 'nexus-hq',
     ownerUserId: owner.id,
-    memberIds: [owner.id, admin.id, manager.id, member.id, viewer.id],
+    memberIds: [owner.id, admin.id, member.id, viewer.id],
     settings: {},
     createdAt: now(),
   };

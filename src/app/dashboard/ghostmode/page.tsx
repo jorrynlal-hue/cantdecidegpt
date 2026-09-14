@@ -65,7 +65,7 @@ export default function GhostModePage() {
         placeholder="e.g. I am stepping away for 48 hours. Hand off what to run, what to hold, and what to flag to me."
         examples={['Hand off the next 48 hours while I am gone', 'What should automation run on its own this week?', 'Write the memo for full ghost mode']}
         prompt={(input, ctx) =>
-          `You are Ghost Mode for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nProduce the hand-off memo: (1) what runs automatically, (2) what is held for a human, (3) the red lines that should stop everything, (4) how to reach the owner.`
+          `You are Ghost Mode for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nProduce the hand-off memo: (1) what runs automatically, (2) what is held for a human, (3) the red lines that should stop everything, (4) how to reach the owner.`
         }
         saveTitle={(input) => `Ghost hand-off — ${input.slice(0, 48)}`}
       />

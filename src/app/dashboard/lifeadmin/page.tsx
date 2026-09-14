@@ -83,7 +83,7 @@ export default function LifeAdminPage() {
           placeholder="e.g. Give me a 10-minute-a-day plan to clear this paperwork without it taking over the week."
           examples={['Make a 10-min-a-day plan to clear this backlog', 'Which items expire or cost money if late? Prioritize them', 'Draft the emails/letters I need for item #1']}
           prompt={(input, ctx) =>
-            `You are Life Admin for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nGive: the order to tackle items (by cost of being late), a daily 10-minute plan for the week, and a ready-to-send draft for the first item.`
+            `You are Life Admin for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nGive: the order to tackle items (by cost of being late), a daily 10-minute plan for the week, and a ready-to-send draft for the first item.`
           }
           saveTitle={(input) => `Life admin plan — ${input.slice(0, 48)}`}
           kind="reference"

@@ -80,7 +80,7 @@ export default function CloserPage() {
         examples={['Draft follow-ups for everything in the list', 'Write the next message for the most valuable open deal', 'Compose a win-back nudge for the overdue invoices']}
         context={context}
         prompt={(input, ctx) =>
-          `You are the Closer for the Imprint operating system. ${ctx ?? ''}\n\nUser instruction: ${input}\n\nFor each target: a one-line status read, the exact next message (subject + body), and the send time. Warm, direct, never pushy.`
+          `You are the Closer for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\nUser instruction: ${input}\n\nFor each target: a one-line status read, the exact next message (subject + body), and the send time. Warm, direct, never pushy.`
         }
         saveTitle={(input) => `Closer follow-ups — ${input.slice(0, 48)}`}
         kind="reference"

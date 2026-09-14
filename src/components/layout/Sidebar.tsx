@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import {
-  Sparkles,
   LayoutDashboard,
   MessageSquare,
   Code,
@@ -17,6 +18,7 @@ import {
   Settings,
   ChevronsLeft,
   ChevronsRight,
+  ChevronDown,
   ClipboardList,
   CheckSquare,
   ShieldCheck,
@@ -46,8 +48,10 @@ import {
   Layers,
   Crown,
   BellRing,
+  Handshake,
   type LucideIcon,
 } from 'lucide-react';
+import { getBrand } from '@/lib/theme';
 
 interface NavItem {
   label: string;
@@ -60,6 +64,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: 'Home',
     items: [
+      { label: 'Projects', href: '/dashboard/projects', icon: Briefcase, prefix: '/dashboard/projects' },
       { label: 'What are we doing today?', href: '/dashboard/command', icon: Zap },
       { label: 'Mission Control', href: '/dashboard/missioncontrol', icon: Airplay, prefix: '/dashboard/missioncontrol' },
       { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -72,6 +77,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     items: [
       { label: 'Radial Board', href: '/dashboard/radial', icon: Radar, prefix: '/dashboard/radial' },
       { label: 'Premium Radial 02', href: '/dashboard/radial02', icon: Crown, prefix: '/dashboard/radial02' },
+      { label: 'Special Radial 03', href: '/dashboard/radial03', icon: Crown, prefix: '/dashboard/radial03' },
       { label: 'Toolkit Tiers', href: '/dashboard/toolkits', icon: Layers, prefix: '/dashboard/toolkits' },
     ],
   },
@@ -137,6 +143,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: 'Marketplace',
     items: [
+      { label: 'Work Board', href: '/dashboard/board', icon: Handshake, prefix: '/dashboard/board' },
       { label: 'Opportunities', href: '/dashboard/marketplace', icon: Store, prefix: '/dashboard/marketplace' },
     ],
   },
@@ -172,12 +179,16 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
+  const [brand] = useState(() => getBrand());
+  const [closed, setClosed] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (label: string) => setClosed((prev) => ({ ...prev, [label]: !prev[label] }));
 
   const sidebarContent = (
     <div className="flex h-full flex-col bg-black border-r border-white/5">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-16 border-b border-white/5 shrink-0">
-        <Sparkles className="w-6 h-6 text-purple-400 shrink-0" />
+        <Image src="/cantdecide-gpt-logo.png" alt={`${brand} logo`} width={24} height={24} className="h-6 w-6 rounded-lg object-cover shrink-0" />
         <AnimatePresence>
           {!collapsed && (
             <motion.span
@@ -187,73 +198,83 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
               transition={{ duration: 0.2 }}
               className="text-lg font-bold text-white whitespace-nowrap overflow-hidden"
             >
-              Can&apos;t Decide GPT
+              {brand}
             </motion.span>
           )}
         </AnimatePresence>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-500"
-                >
-                  {group.label}
-                </motion.p>
-              )}
-            </AnimatePresence>
-            <div className="space-y-1">
-              {group.items.map((item) => {
-                const isActive = item.prefix
-                  ? pathname === item.href || pathname.startsWith(item.prefix)
-                  : pathname === item.href;
-                const Icon = item.icon;
-
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
+        {navGroups.map((group) => {
+          const isClosed = collapsed || closed[group.label];
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onMobileClose}
-              className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${
-                isActive
-                  ? 'bg-purple-500/10 text-purple-400'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 rounded-lg bg-purple-500/10 border border-purple-500/20"
-                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                />
-              )}
-              <Icon className="w-5 h-5 shrink-0 relative z-10" />
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
+            <div key={group.label}>
+              <button
+                onClick={() => toggleGroup(group.label)}
+                className="flex w-full items-center gap-1 px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-500 hover:text-gray-300"
+              >
+                <span className="flex-1 text-left">{group.label}</span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${isClosed ? '-rotate-90' : ''}`} />
+              </button>
+              <AnimatePresence initial={false}>
+                {!isClosed && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="relative z-10 whitespace-nowrap overflow-hidden"
+                    className="overflow-hidden"
                   >
-                    {item.label}
-                  </motion.span>
+                    <div className="space-y-1">
+                      {group.items.map((item) => {
+                        const isActive = item.prefix
+                          ? pathname === item.href || pathname.startsWith(item.prefix)
+                          : pathname === item.href;
+                        const Icon = item.icon;
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={onMobileClose}
+                            className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${
+                              isActive
+                                ? 'bg-[var(--c-accent-soft)] text-[var(--c-accent-text)]'
+                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            }`}
+                          >
+                            {isActive && (
+                              <motion.div
+                                layoutId="activeTab"
+                                className="absolute inset-0 rounded-lg bg-[var(--c-accent-soft)] border border-[var(--c-accent-border)]"
+                                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                              />
+                            )}
+                            <Icon className="w-5 h-5 shrink-0 relative z-10" />
+                            <AnimatePresence>
+                              {!collapsed && (
+                                <motion.span
+                                  initial={{ opacity: 0, width: 0 }}
+                                  animate={{ opacity: 1, width: 'auto' }}
+                                  exit={{ opacity: 0, width: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="relative z-10 whitespace-nowrap overflow-hidden"
+                                >
+                                  {item.label}
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
-            </Link>
-          );
-              })}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Collapse Toggle (desktop only) */}

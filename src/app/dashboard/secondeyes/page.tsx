@@ -17,7 +17,7 @@ export default function SecondEyesPage() {
         placeholder="e.g. Read this email before I send it to a client who is frustrated: [paste text]"
         examples={['Review this email before I send it', 'Read this contract clause and tell me if it is bad for me', 'Spot anything in this proposal that could backfire']}
         prompt={(input, ctx) =>
-          `You are Second Eyes for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nGive the second read: tone and clarity check, the line that could backfire, anything risky or missing, and a clean improved version. No fluff.`
+          `You are Second Eyes for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nGive the second read: tone and clarity check, the line that could backfire, anything risky or missing, and a clean improved version. No fluff.`
         }
         saveTitle={(input) => `Second read — ${input.slice(0, 48)}`}
       />

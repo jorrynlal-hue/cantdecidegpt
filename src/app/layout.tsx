@@ -8,8 +8,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Can't Decide GPT — Generative Human Workspace",
-  description: "The generative human workspace: high-tech AI with full human integrations, insights, tools and payments.",
+  title: "CAN'T DECIDE GPT — Human life, work and services connected with powerful AI help",
+  description: "The human-focused AI workspace. Connect your people, tasks, messages, meetings, files, projects and daily life with AI that prepares the work and keeps you in control of important actions.",
+  icons: {
+    icon: "/cantdecide-gpt-logo.png",
+    shortcut: "/cantdecide-gpt-logo.png",
+    apple: "/cantdecide-gpt-logo.png",
+  },
 };
 
 export default function RootLayout({

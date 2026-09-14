@@ -47,7 +47,7 @@ export default function MoneyPeacePage() {
         examples={['Where do I stand, simply?', 'What is quietly eating my budget?', 'Say something reassuring that is still true']}
         context={context}
         prompt={(input, ctx) =>
-          `You are Money Peace for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nAnswer with calm, plain, honest clarity: the real number, the real concern, the one next step. Kind but never patronizing, never alarmist.`
+          `You are Money Peace for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nAnswer with calm, plain, honest clarity: the real number, the real concern, the one next step. Kind but never patronizing, never alarmist.`
         }
         saveTitle={(input) => `Money peace — ${input.slice(0, 48)}`}
       />

@@ -77,7 +77,7 @@ export default function CompetitorShadowPage() {
           placeholder="e.g. They launched a free tier. What is our best counter-move?"
           examples={['They launched a free tier — our counter-move?', 'Is this move worth responding to at all?', 'What would they least like us to do right now?']}
           prompt={(input, ctx) =>
-            `You are Competitor Shadow for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nAssess the move coolly: whether to respond at all, the counter-move with the best leverage, what to explicitly not do, and the timing. Avoid panic responses.`
+            `You are Competitor Shadow for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nAssess the move coolly: whether to respond at all, the counter-move with the best leverage, what to explicitly not do, and the timing. Avoid panic responses.`
           }
           saveTitle={(input) => `Counter-move — ${input.slice(0, 48)}`}
         />

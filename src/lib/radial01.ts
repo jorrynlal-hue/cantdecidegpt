@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import { TIER_2 } from '@/lib/radial02';
+import { TIER_3 } from '@/lib/radial03';
 
 export type RadialFamily = 'system' | 'intelligence' | 'work' | 'growth' | 'delivery';
 
@@ -181,18 +182,11 @@ export const TOOLKIT_TIERS: ToolkitTier[] = [
     ],
   },
   {
-    id: 'operatorkit',
-    name: 'Expansion 2',
-    price: '$1,600',
-    priceNote: 'one-time + activation',
-    status: 'pending',
-    tagline: 'Operator toolkit \u2014 specification pending. Nothing invented yet.',
-    included: [],
-    missing: [
-      'Tool inventory not yet specified',
-      'No features listed \u2014 will be added when the spec is written',
+    ...TIER_3,
+    priceNote: TIER_3.priceNote,
+    included: [
+      ...TIER_3.included,
+      'Same CAN\u2019T DECIDE GPT ecosystem and design system as Radial Systems 01 and 02 \u2014 one operating system, three operator tiers',
     ],
-    cta: 'Spec pending',
-    href: '/dashboard/toolkits',
   },
 ];

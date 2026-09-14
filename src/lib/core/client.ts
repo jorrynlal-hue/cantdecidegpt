@@ -191,6 +191,57 @@ export const insights = {
   remove: (id: string) => collection.remove('insights', id),
 };
 
+export interface WorkProfileView {
+  id: string;
+  userId: string;
+  role: 'finder' | 'taker';
+  name: string;
+  email: string;
+  fields: string[];
+  details: string;
+  resume?: string;
+  socials: string[];
+  availability?: string;
+  createdAt: string;
+}
+
+export interface ThreadView {
+  id: string;
+  withId: string;
+  withName: string;
+  profileId?: string;
+  lastMessage: string;
+  lastAt: string;
+  unread: number;
+  createdAt: string;
+}
+
+export interface DmThreadView {
+  id: string;
+  aId: string;
+  aName: string;
+  bId: string;
+  bName: string;
+  profileId?: string;
+  messages: { id: string; from: string; text: string; at: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const board = {
+  profiles: (params: Record<string, string> = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request<{ profiles: WorkProfileView[]; fields: string[] }>(`/api/board${qs ? `?${qs}` : ''}`, 'GET');
+  },
+  create: (input: Record<string, unknown>) => request<{ profile: WorkProfileView }>('/api/board', 'POST', input),
+  update: (id: string, patch: Record<string, unknown>) => request<{ profile: WorkProfileView }>(`/api/board/${id}`, 'PATCH', patch),
+  remove: (id: string) => request<{ deleted: boolean }>(`/api/board/${id}`, 'DELETE'),
+  connect: (profileId: string, message?: string) => request<{ thread: DmThreadView }>('/api/board/connect', 'POST', { profileId, message }),
+  threads: () => request<{ threads: ThreadView[] }>('/api/board/threads', 'GET'),
+  thread: (id: string) => request<{ thread: DmThreadView }>(`/api/board/threads/${id}`, 'GET'),
+  send: (threadId: string, text: string) => request<{ message: { id: string; from: string; text: string; at: string } }>(`/api/board/threads/${threadId}`, 'POST', { text }),
+};
+
 export const team = {
   users: () => request<{ id: string; name: string; email: string; role: Role }[]>('/api/team/users', 'GET'),
   create: (input: { email: string; name: string; password?: string; role?: Role }) =>

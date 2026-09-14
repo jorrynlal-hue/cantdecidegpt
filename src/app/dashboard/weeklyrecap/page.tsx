@@ -53,7 +53,7 @@ export default function WeeklyRecapPage() {
         examples={['Recap the week in a short journal entry', 'What did I actually get done and what slipped?', 'Turn this into a Saturday night reflection']}
         context={context}
         prompt={(input, ctx) =>
-          `You are the Weekly Recap for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nWrite a warm, honest recap: what moved, what slipped, what the week taught, and one intention for next week. Under 200 words.`
+          `You are the Weekly Recap for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nWrite a warm, honest recap: what moved, what slipped, what the week taught, and one intention for next week. Under 200 words.`
         }
         saveTitle={() => `Weekly recap — ${new Date().toLocaleDateString()}`}
       />

@@ -56,7 +56,7 @@ export default function NudgePage() {
         examples={['Give me the one nudge that matters', 'Say it gently but make it clear', 'What is the smallest step I can take right now?']}
         context={context}
         prompt={(input, ctx) =>
-          `You are Nudge for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nGive one gentle nudge: name the top item, give the smallest possible first step, and one honest reassurance. Short and kind.`
+          `You are Nudge for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nGive one gentle nudge: name the top item, give the smallest possible first step, and one honest reassurance. Short and kind.`
         }
         saveTitle={(input) => `Nudge — ${input.slice(0, 48)}`}
       />

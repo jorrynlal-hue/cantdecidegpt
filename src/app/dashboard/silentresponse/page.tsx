@@ -17,7 +17,7 @@ export default function SilentResponsePage() {
         placeholder="e.g. A client just wrote: 'This is unacceptable, we are done.' Draft a reply that holds the line without burning the bridge."
         examples={['"This is unacceptable, we are done." — draft the reply', 'A partner is trying to guilt me into a discount. Compose the calm answer', 'Fix my angry draft into something that keeps the high ground']}
         prompt={(input, ctx) =>
-          `You are Silent Response for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nDraft the reply: acknowledges their point, does not surrender yours, buys breathing room, leaves the door open. Under 100 words, no apology where none is owed.`
+          `You are Silent Response for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nDraft the reply: acknowledges their point, does not surrender yours, buys breathing room, leaves the door open. Under 100 words, no apology where none is owed.`
         }
         saveTitle={(input) => `Silent response — ${input.slice(0, 48)}`}
       />

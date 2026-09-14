@@ -51,7 +51,7 @@ export default function WeeklyOpsPage() {
         examples={['Write the week’s operating brief', 'What is the one thing that must happen this week?', 'Turn these numbers into a 5-bullet brief']}
         context={context}
         prompt={(input, ctx) =>
-          `You are Weekly Ops for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nWrite the Monday brief: a 3-sentence state of the system, the one thing that must happen, the two risks, and the focus for the week. No filler.`
+          `You are Weekly Ops for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nWrite the Monday brief: a 3-sentence state of the system, the one thing that must happen, the two risks, and the focus for the week. No filler.`
         }
         saveTitle={() => `Weekly ops brief — ${new Date().toLocaleDateString()}`}
         kind="reference"

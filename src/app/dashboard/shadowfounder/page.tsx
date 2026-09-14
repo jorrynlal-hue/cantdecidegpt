@@ -49,7 +49,7 @@ export default function ShadowFounderPage() {
         examples={['Write tonight’s founder memo', 'What should I repeat tomorrow, and what should I stop?', 'Give me the three decisions brewing']}
         context={context}
         prompt={(input, ctx) =>
-          `You are the Shadow Founder for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nWrite the night memo: the day's real score, the decision that needs tomorrow, the one thing to stop, and the one thing to protect. Direct, no flattery.`
+          `You are the Shadow Founder for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nWrite the night memo: the day's real score, the decision that needs tomorrow, the one thing to stop, and the one thing to protect. Direct, no flattery.`
         }
         saveTitle={() => `Shadow founder memo — ${new Date().toLocaleDateString()}`}
       />

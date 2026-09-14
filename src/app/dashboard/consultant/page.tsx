@@ -17,7 +17,7 @@ export default function ConsultantPage() {
         placeholder="e.g. I have a $9,000 client deciding between two directions and my gut says one of them. What do I advise?"
         examples={['Should I raise prices or add a service tier?', 'A big client wants a contract change mid-project — advice?', 'Walk me through how a consulting engagement would fix this mess']}
         prompt={(input, ctx) =>
-          `You are the Consultant Button for the Imprint operating system. ${ctx ?? ''}\n\n${input}\n\nGive the kind of answer that earns $500/hr: a crisp read of the situation, the decision framing, your recommendation with reasoning, the risk you'd be wrong, and the 3 moves you'd make by Friday.`
+          `You are the Consultant Button for the CAN'T DECIDE GPT operating system. ${ctx ?? ''}\n\n${input}\n\nGive the kind of answer that earns $500/hr: a crisp read of the situation, the decision framing, your recommendation with reasoning, the risk you'd be wrong, and the 3 moves you'd make by Friday.`
         }
         saveTitle={(input) => `Consult consult — ${input.slice(0, 48)}`}
       />
