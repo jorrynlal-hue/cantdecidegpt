@@ -2,19 +2,21 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { Btn } from '@/components/platform/ui';
+import { Btn, Field, Input } from '@/components/platform/ui';
 import { collection } from '@/lib/core/client';
 import { AIMemo } from '@/components/platform/AIMemo';
 
 export default function RecruiterPage() {
-  const [input] = useState('');
+  const [roleInput, setRoleInput] = useState('');
   const [busy, setBusy] = useState(false);
 
   const postScreeningTask = async () => {
-    if (!input.trim()) return;
+    const text = roleInput.trim();
+    if (!text) return;
     setBusy(true);
     try {
-      await collection.create('tasks', { title: `Screen candidates: ${input.slice(0, 60)}`, priority: 'high' });
+      await collection.create('tasks', { title: `Screen candidates: ${text.slice(0, 60)}`, priority: 'high' });
+      setRoleInput('');
       alert('Screening task added to your queue.');
     } catch (e) {
       alert((e as Error).message);
@@ -42,12 +44,18 @@ export default function RecruiterPage() {
         saveTitle={(input) => `Role brief — ${input.slice(0, 48)}`}
       />
 
-      <div className="flex items-center gap-2">
-        <Btn onClick={postScreeningTask} disabled={busy || !input.trim()}>
-          <Plus className="h-3.5 w-3.5" /> Add screening task to queue
-        </Btn>
-        <span className="text-[11px] text-gray-500">Your brief above is used as the task title.</span>
-      </div>
+      <Field label="Role to screen for">
+        <div className="flex items-center gap-2">
+          <Input
+            value={roleInput}
+            onChange={setRoleInput}
+            placeholder="e.g. Part-time marketer for newsletter + Instagram"
+          />
+          <Btn onClick={postScreeningTask} disabled={busy || !roleInput.trim()}>
+            <Plus className="h-3.5 w-3.5" /> Add screening task to queue
+          </Btn>
+        </div>
+      </Field>
     </div>
   );
 }

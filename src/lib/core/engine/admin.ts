@@ -241,6 +241,7 @@ export function createWorkflow(ctx: Ctx, db: DB, input: WorkflowInput): Workflow
     createdAt: now(),
     updatedAt: now(),
   };
+  if (trigger.type === 'webhook') w.webhookSecret = uid();
   db.workflows.push(w);
   logActivity(ctx, db, { action: 'workflow.create', result: `Created automation "${w.name}"`, objectType: 'workflow', objectId: w.id, objectLabel: w.name });
   persist(db);
@@ -257,6 +258,7 @@ export function updateWorkflow(ctx: Ctx, db: DB, workflowId: string, patch: Part
     if (patch.trigger.filter) t.filter = patch.trigger.filter;
     if (patch.trigger.schedule) t.schedule = optStr(patch.trigger.schedule);
     w.trigger = t;
+    w.webhookSecret = t.type === 'webhook' ? (w.webhookSecret ?? uid()) : undefined;
   }
   if (patch.steps !== undefined) w.steps = sanitizeSteps(patch.steps);
   if (patch.enabled !== undefined) w.enabled = !!patch.enabled;

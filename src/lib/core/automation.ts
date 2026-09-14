@@ -67,82 +67,97 @@ export function createExecution(ctx: Ctx, db: DB, wf: Workflow, trigger: string,
 }
 
 function advance(ctx: Ctx, db: DB, exec: Execution, wf: Workflow): void {
-  while (exec.stepIndex < wf.steps.length) {
-    const step = wf.steps[exec.stepIndex];
-    exec.stepIndex += 1;
-    if (step.kind === 'condition') {
-      const ok = evalCondition(step.condition, exec.payload);
-      exec.results.push({ stepId: step.id, action: 'condition', output: ok ? 'Condition met' : 'Condition not met', at: now() });
-      if (!ok) {
-        exec.status = 'completed';
-        exec.endedAt = now();
-        persist(db);
-        return;
-      }
-      continue;
-    }
-    if (step.kind === 'result') {
-      exec.results.push({ stepId: step.id, action: 'result', output: String(step.params?.output ?? ''), at: now() });
-      continue;
-    }
-    if (step.kind === 'delay') {
-      const resumeAt = new Date(Date.now() + (step.delaySec ?? 30) * 1000).toISOString();
-      exec.results.push({ stepId: step.id, action: 'delay', output: `Waiting ${step.delaySec}s`, at: now() });
-      exec.status = 'waiting';
-      exec.resumeAt = resumeAt;
-      persist(db);
-      return;
-    }
-    if (step.kind === 'action' && step.action) {
-      if (step.approved && exec.approvedStepId !== step.id) {
-        const approval = requestApproval(ctx, db, {
-          title: `Approve "${step.action}"`,
-          detail: `Automation "${wf.name}" wants to run step "${step.action}" on ${wf.name}.`,
-          kind: 'automation',
-          payload: { workflowId: wf.id, executionId: exec.id, stepId: step.id },
-          executionId: exec.id,
-        });
-        exec.results.push({ stepId: step.id, action: step.action, output: 'Waiting for approval', at: now() });
-        exec.status = 'waiting';
-        exec.pendingApprovalId = approval.id;
-        persist(db);
-        return;
-      }
-      const action = getAction(step.action);
-      if (!action) {
-        exec.status = 'failed';
-        exec.endedAt = now();
-        exec.results.push({ stepId: step.id, action: step.action, error: `Unknown action "${step.action}"`, at: now() });
-        persist(db);
-        return;
-      }
-      const params: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(step.params ?? {})) {
-        params[k] = template(v, exec.payload);
-      }
-      try {
-        const result = action.run(ctx, db, params);
-        if (!result.ok) {
-          exec.status = 'failed';
-          exec.endedAt = now();
-          exec.results.push({ stepId: step.id, action: step.action, error: result.summary, at: now() });
+  // Actions run under a "workflow" actor so side effects they produce (e.g. a
+  // created task) never re-trigger the same event-driven workflows — that
+  // prevents infinite automation loops.
+  const wctx: Ctx = { ...ctx, actorSource: 'workflow' };
+  void (async () => {
+    let lastStepId = '';
+    try {
+      while (exec.stepIndex < wf.steps.length) {
+        const step = wf.steps[exec.stepIndex];
+        exec.stepIndex += 1;
+        lastStepId = step.id;
+        if (step.kind === 'condition') {
+          const ok = evalCondition(step.condition, exec.payload);
+          exec.results.push({ stepId: step.id, action: 'condition', output: ok ? 'Condition met' : 'Condition not met', at: now() });
+          if (!ok) {
+            exec.status = 'completed';
+            exec.endedAt = now();
+            persist(db);
+            return;
+          }
+          continue;
+        }
+        if (step.kind === 'result') {
+          exec.results.push({ stepId: step.id, action: 'result', output: String(step.params?.output ?? ''), at: now() });
+          continue;
+        }
+        if (step.kind === 'delay') {
+          const resumeAt = new Date(Date.now() + (step.delaySec ?? 30) * 1000).toISOString();
+          exec.results.push({ stepId: step.id, action: 'delay', output: `Waiting ${step.delaySec}s`, at: now() });
+          exec.status = 'waiting';
+          exec.resumeAt = resumeAt;
           persist(db);
           return;
         }
-        exec.results.push({ stepId: step.id, action: step.action, output: result.summary, at: now() });
-      } catch (err) {
-        exec.status = 'failed';
-        exec.endedAt = now();
-        exec.results.push({ stepId: step.id, action: step.action, error: String(err), at: now() });
-        persist(db);
-        return;
+        if (step.kind === 'action' && step.action) {
+          if (step.approved && exec.approvedStepId !== step.id) {
+            const approval = requestApproval(wctx, db, {
+              title: `Approve "${step.action}"`,
+              detail: `Automation "${wf.name}" wants to run step "${step.action}" on ${wf.name}.`,
+              kind: 'automation',
+              payload: { workflowId: wf.id, executionId: exec.id, stepId: step.id },
+              executionId: exec.id,
+            });
+            exec.results.push({ stepId: step.id, action: step.action, output: 'Waiting for approval', at: now() });
+            exec.status = 'waiting';
+            exec.pendingApprovalId = approval.id;
+            persist(db);
+            return;
+          }
+          const action = getAction(step.action);
+          if (!action) {
+            exec.status = 'failed';
+            exec.endedAt = now();
+            exec.results.push({ stepId: step.id, action: step.action, error: `Unknown action "${step.action}"`, at: now() });
+            persist(db);
+            return;
+          }
+          const params: Record<string, unknown> = {};
+          for (const [k, v] of Object.entries(step.params ?? {})) {
+            params[k] = template(v, exec.payload);
+          }
+          try {
+            const result = await action.run(wctx, db, params);
+            if (!result.ok) {
+              exec.status = 'failed';
+              exec.endedAt = now();
+              exec.results.push({ stepId: step.id, action: step.action, error: result.summary, at: now() });
+              persist(db);
+              return;
+            }
+            exec.results.push({ stepId: step.id, action: step.action, output: result.summary, at: now() });
+          } catch (err) {
+            exec.status = 'failed';
+            exec.endedAt = now();
+            exec.results.push({ stepId: step.id, action: step.action, error: String(err), at: now() });
+            persist(db);
+            return;
+          }
+          continue;
+        }
       }
-      continue;
+      exec.status = 'completed';
+      exec.endedAt = now();
+      persist(db);
+    } catch (err) {
+      exec.status = 'failed';
+      exec.endedAt = now();
+      exec.results.push({ stepId: lastStepId, action: 'run', error: String(err), at: now() });
+      persist(db);
     }
-  }
-  exec.status = 'completed';
-  exec.endedAt = now();
-  persist(db);
+  })();
 }
 
 export function startExecution(ctx: Ctx, db: DB, wf: Workflow, trigger: string, payload: Record<string, unknown>): Execution {
@@ -267,10 +282,13 @@ export function sweep(db: DB): void {
   }
   // scheduled_time triggers
   const tax = nowIso;
+  const minuteKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`;
+  const thisMinute = minuteKey(new Date(tax));
   for (const wf of db.workflows) {
     if (!wf.enabled || wf.trigger.type !== 'scheduled_time') continue;
     if (!wf.trigger.schedule) continue;
-    if (scheduleDue(wf.trigger.schedule, tax, db)) {
+    if (wf.firedAt && minuteKey(new Date(wf.firedAt)) === thisMinute) continue;
+    if (scheduleDue(wf.trigger.schedule, tax)) {
       const creator = db.users.find((u) => u.id === wf.createdBy);
       if (!creator) continue;
       const ctx: Ctx = {
@@ -280,7 +298,8 @@ export function sweep(db: DB): void {
         actorLabel: 'Scheduler',
       };
       startExecution(ctx, db, wf, 'scheduled_time', { at: tax });
-      notify({ ...ctx, user: ctx.user } as Ctx, db, creator.id, {
+      wf.firedAt = nowIso;
+      notify(ctx, db, creator.id, {
         title: `Scheduled automation "${wf.name}" ran`,
         body: tax,
         kind: 'workflow',
@@ -290,7 +309,7 @@ export function sweep(db: DB): void {
   }
 }
 
-function scheduleDue(schedule: string, nowIso: string, db: DB): boolean {
+function scheduleDue(schedule: string, nowIso: string): boolean {
   const d = new Date(nowIso);
   const [when, time] = schedule.split(' ').filter(Boolean);
   if (when === 'hourly') {
@@ -311,13 +330,20 @@ function scheduleDue(schedule: string, nowIso: string, db: DB): boolean {
 
 export function handleEvent(ctx: Ctx, db: DB, type: string, payload: Record<string, unknown>): void {
   if (ctx.actorSource === 'workflow') return; // avoid automation loops
-  if (!['new_task', 'completed_task', 'new_customer', 'new_lead', 'new_document'].includes(type)) return;
+  if (!['new_task', 'completed_task', 'new_customer', 'new_lead', 'new_document', 'webhook'].includes(type)) return;
   const candidates = db.workflows.filter((w) => w.workspaceId === ctx.workspaceId && w.enabled && w.trigger.type === type);
   for (const wf of candidates) {
     if (!filterMatches(wf.trigger.filter, payload)) continue;
     startExecution(ctx, db, wf, type, payload);
   }
 }
+
+// Subscribe the automation engine to platform events so event-driven
+// workflows (new_task, completed_task, new_customer, new_lead, new_document)
+// actually start when those records are created.
+onEvent((ctx, db, type, payload) => {
+  handleEvent(ctx, db, type, payload);
+});
 
 // ---- approval decisions resume executions ----
 

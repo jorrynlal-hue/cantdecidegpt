@@ -59,7 +59,7 @@ async function decideAndReply(ctx: Ctx, db: DB, text: string): Promise<{ reply: 
       }
     }
     try {
-      const result = action.run(ctx, db, params);
+      const result = await action.run(ctx, db, params);
       return { reply: result.ok ? `Done: ${result.summary}` : `Failed: ${result.summary}`, toolUsed: action.id };
     } catch (err) {
       return { reply: `Action error: ${String(err)}`, toolUsed: action.id };
@@ -68,9 +68,10 @@ async function decideAndReply(ctx: Ctx, db: DB, text: string): Promise<{ reply: 
 
   // create task intent
   if (/create (a )?task/i.test(low) || /add (a )?task/i.test(low)) {
-    const title = t.replace(/^[^:]*?(?=:)/i, '').replace(/^(create|add)\s+a?\s*task\s*[:,-]?\s*/i, '').trim() || 'Untitled task';
+    const titled = t.match(/titled\s+"?([^"?.]+)"?/i)?.[1];
+    const title = (titled ?? t.replace(/^[^:]*?(?=:)/i, '').replace(/^(create|add)\s+a?\s*task\s*[:,-]?\s*/i, '').trim()) || 'Untitled task';
     const action = getAction('create_task')!;
-    const result = action.run(ctx, db, { title });
+    const result = await action.run(ctx, db, { title });
     return { reply: result.ok ? `Done: ${result.summary}` : `Failed: ${result.summary}`, toolUsed: 'create_task' };
   }
 

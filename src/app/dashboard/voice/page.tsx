@@ -31,7 +31,7 @@ export default function VoicePage() {
         body: JSON.stringify({ audioText: inputText, action }),
       });
       const data = await res.json();
-      setResult(data.result || data.output || 'No output generated.');
+      setResult(data.data ?? data.result ?? data.output ?? 'No output generated.');
     } catch {
       setResult('Failed to process audio text. Please try again.');
     } finally {

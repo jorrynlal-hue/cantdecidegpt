@@ -24,10 +24,10 @@ interface StepUi {
   form: WorkflowStepForm;
 }
 
-interface WorkflowRow { id: string; name: string; description?: string; enabled: boolean; trigger: { type: string; schedule?: string; filter?: Record<string, string> }; steps: { id: string; kind: string; action?: string; params?: Record<string, unknown>; condition?: { field: string; op: string; value: string }; delaySec?: number; approved?: boolean }[]; createdAt: string; }
+interface WorkflowRow { id: string; name: string; description?: string; enabled: boolean; trigger: { type: string; schedule?: string; filter?: Record<string, string> }; steps: { id: string; kind: string; action?: string; params?: Record<string, unknown>; condition?: { field: string; op: string; value: string }; delaySec?: number; approved?: boolean }[]; createdAt: string; webhookSecret?: string; }
 interface Execution { id: string; workflowName: string; status: string; triggerType: string; startedAt: string; finishedAt?: string; error?: string; dryRun?: boolean; verified?: boolean; }
 
-const ACTIONS = ['create_task', 'update_task', 'complete_task', 'delete_task', 'create_project', 'create_customer', 'create_deal', 'move_deal', 'create_campaign', 'create_post', 'publish_post', 'send_email', 'create_document', 'search_documents', 'create_knowledge', 'save_content', 'generate_content', 'generate_image', 'record_transaction', 'create_invoice', 'mark_invoice_paid', 'create_event', 'create_workflow', 'request_approval', 'get_analytics', 'search', 'notify_team'];
+const ACTIONS = ['create_task', 'update_task', 'complete_task', 'delete_task', 'create_project', 'create_customer', 'create_deal', 'move_deal', 'create_campaign', 'create_post', 'publish_post', 'send_email', 'create_document', 'search_documents', 'create_knowledge', 'save_content', 'generate_content', 'generate_image', 'record_transaction', 'create_invoice', 'mark_invoice_paid', 'create_event', 'create_workflow', 'run_workflow', 'run_assistant', 'request_approval', 'get_analytics', 'search', 'notify_team'];
 const TRIGGERS = ['manual', 'scheduled_time', 'new_task', 'completed_task', 'new_customer', 'new_lead', 'new_document', 'webhook'];
 
 const exTone = (s: string) => (s === 'completed' ? 'green' : s === 'running' ? 'blue' : s === 'failed' ? 'red' : s === 'waiting' ? 'amber' : 'gray') as 'green' | 'blue' | 'red' | 'amber' | 'gray';
@@ -92,7 +92,7 @@ export default function AutomationPage() {
         trigger: { type: trigger, ...(trigger === 'scheduled_time' && schedule ? { schedule } : {}) },
         steps: payload,
       });
-      setShow(false); setName(''); setDesc(''); setSchedule(''); setSteps([{ id: Date.now(), form: { kind: 'action', action: 'sendNotification' } }]);
+      setShow(false); setName(''); setDesc(''); setSchedule(''); setSteps([{ id: Date.now(), form: { kind: 'action', action: 'notify_team' } }]);
       workflows.reload();
     } catch (e) {
       alert((e as Error).message);
@@ -178,6 +178,13 @@ export default function AutomationPage() {
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-white">{w.name}</p>
                   <p className="text-xs text-gray-500 mt-0.5">Trigger: <span className="text-purple-300">{w.trigger.type}</span>{w.trigger.schedule ? ` · ${w.trigger.schedule}` : ''} · {w.steps.length} step(s)</p>
+                  {w.trigger.type === 'webhook' && w.webhookSecret && (
+                    <p className="text-[11px] text-gray-500 mt-1.5 flex items-center gap-2">
+                      <span>Webhook URL</span>
+                      <code className="text-gray-300 bg-white/5 rounded px-1.5 py-0.5 break-all">{`${window.location.origin}/api/webhooks/${w.webhookSecret}`}</code>
+                      <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/api/webhooks/${w.webhookSecret}`); }} className="text-purple-300 hover:text-purple-200 underline underline-offset-2">copy</button>
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge tone={w.enabled ? 'green' : 'gray'}>{w.enabled ? 'enabled' : 'disabled'}</Badge>
@@ -257,7 +264,7 @@ export default function AutomationPage() {
                 <Field label="Trigger">
                   <Select value={trigger} onChange={setTrigger} options={TRIGGERS.map((t) => ({ label: t.replace('_', ' '), value: t }))} />
                 </Field>
-                {trigger === 'scheduled_time' ? <Field label="Schedule (cron text)"><Input value={schedule} onChange={setSchedule} placeholder="0 9 * * *" /></Field> : <div className="h-0" />}
+                {trigger === 'scheduled_time' ? <Field label="Schedule"><Input value={schedule} onChange={setSchedule} placeholder="hourly · daily 09:00 · weekly mon 09:00" /></Field> : <div className="h-0" />}
               </div>
               <Field label="Description"><Input value={desc} onChange={setDesc} /></Field>
 

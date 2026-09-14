@@ -8,7 +8,7 @@ import { createDeal, updateDeal } from './engine/crm';
 import { createCampaign } from './engine/marketing';
 import { createPost, publishPost, sendEmail, createEmail } from './engine/marketing';
 import { createDocument, searchDocuments, createKnowledge, saveContent, getDocument } from './engine/docs';
-import { runGeneration, requestApproval } from './engine/misc';
+import { runGenerationLive, requestApproval } from './engine/misc';
 import { createInvoice, setInvoiceStatus, createTransaction, listTransactions } from './engine/finance';
 import { createEvent } from './engine/misc';
 import { createWorkflow } from './engine/admin';
@@ -38,7 +38,7 @@ export interface UniversalAction {
   category: string;
   params: ActionParam[];
   minRole?: Role;
-  run: (ctx: Ctx, db: DB, params: Record<string, unknown>) => ActionResult;
+  run: (ctx: Ctx, db: DB, params: Record<string, unknown>) => ActionResult | Promise<ActionResult>;
 }
 
 export type ActionResult_ = ActionResult;
@@ -361,8 +361,8 @@ registerAction({
   description: 'Generate text content based on a prompt.',
   category: 'ai',
   params: [{ name: 'prompt', label: 'Prompt', type: 'string', required: true }],
-  run: (ctx, db, p) => {
-    const { generation } = runGeneration(ctx, db, { kind: 'content', prompt: s(p.prompt) });
+  run: async (ctx, db, p) => {
+    const { generation } = await runGenerationLive(ctx, db, { kind: 'content', prompt: s(p.prompt) });
     return { ok: true, summary: 'Generated content draft', id: generation.id, data: { text: generation.result } };
   },
 });
@@ -373,8 +373,8 @@ registerAction({
   description: 'Generate an image from a description.',
   category: 'ai',
   params: [{ name: 'prompt', label: 'Prompt', type: 'string', required: true }],
-  run: (ctx, db, p) => {
-    const { generation } = runGeneration(ctx, db, { kind: 'image', prompt: s(p.prompt) });
+  run: async (ctx, db, p) => {
+    const { generation } = await runGenerationLive(ctx, db, { kind: 'image', prompt: s(p.prompt) });
     return { ok: true, summary: 'Generated image preview', id: generation.id, data: { image: generation.result } };
   },
 });
@@ -481,6 +481,44 @@ registerAction({
   run: (ctx, db, p) => {
     const a = requestApproval(ctx, db, { title: s(p.title), detail: s(p.detail) });
     return { ok: true, summary: `Approval requested: "${a.title}"`, id: a.id };
+  },
+});
+
+registerAction({
+  id: 'run_workflow',
+  label: 'Run workflow',
+  description: 'Run another automation workflow (chained flows).',
+  category: 'automation',
+  params: [
+    { name: 'workflowId', label: 'Workflow ID', type: 'string', required: true },
+    { name: 'payload', label: 'Payload (JSON)', type: 'string' },
+  ],
+  run: async (ctx, db, p) => {
+    const { runWorkflow } = await import('./automation');
+    let payload: Record<string, unknown> = {};
+    const raw = s(p.payload);
+    if (raw.trim()) {
+      try {
+        payload = JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        return { ok: false, summary: 'Invalid payload JSON in run_workflow' };
+      }
+    }
+    const exec = await runWorkflow(ctx, db, s(p.workflowId), payload);
+    return { ok: true, summary: `Ran workflow ${exec.workflowId.slice(0, 8)} (${exec.status})`, id: exec.id };
+  },
+});
+
+registerAction({
+  id: 'run_assistant',
+  label: 'Run agent',
+  description: 'Ask the assistant agent to reason and complete a task using your tools.',
+  category: 'ai',
+  params: [{ name: 'prompt', label: 'Prompt', type: 'string', required: true }],
+  run: async (ctx, db, p) => {
+    const { chat } = await import('./assistant');
+    const { reply } = await chat(ctx, db, s(p.prompt));
+    return { ok: true, summary: reply.slice(0, 120), data: { reply } };
   },
 });
 

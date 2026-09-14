@@ -166,6 +166,10 @@ export const crud: Record<string, CrudDef> = {
       if (String(p.op ?? '') === 'cancel') return cancelExecution(ctx, db, id);
       return getExecution(db, ctx.workspaceId, id);
     },
+    remove: (ctx, db, id) => {
+      db.executions = db.executions.filter((e) => !(e.id === id && e.workspaceId === ctx.workspaceId));
+      persist(db);
+    },
   },
   events: {
     list: (db, ws, q) => misc.listEvents(db, ws, q.from, q.to),

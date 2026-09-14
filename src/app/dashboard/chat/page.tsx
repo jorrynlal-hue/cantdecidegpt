@@ -53,7 +53,7 @@ export default function ChatPage() {
       const data = await res.json();
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: data.content || data.message || 'No response received.' },
+        { role: 'assistant', content: data.data ?? data.content ?? data.message ?? 'No response received.' },
       ]);
     } catch {
       setMessages((prev) => [

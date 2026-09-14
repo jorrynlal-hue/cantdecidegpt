@@ -28,7 +28,7 @@ export default function SummarizePage() {
         body: JSON.stringify({ text: inputText, length }),
       })
       const data = await res.json()
-      setResult(data.summary)
+      setResult(data.data ?? data.summary)
     } catch (err) {
       console.error(err)
     } finally {

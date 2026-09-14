@@ -13,7 +13,7 @@ export interface SessionUser {
 export interface Ctx {
   user: SessionUser;
   workspaceId: string;
-  actorSource?: 'user' | 'ai' | 'workflow' | 'integration' | 'system';
+  actorSource?: 'user' | 'ai' | 'workflow' | 'integration' | 'system' | 'webhook';
   actorLabel?: string;
 }
 
@@ -352,6 +352,8 @@ export interface Workflow {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  firedAt?: string;
+  webhookSecret?: string;
 }
 
 export type ExecutionStatus = 'queued' | 'running' | 'waiting' | 'completed' | 'failed' | 'cancelled';
@@ -409,7 +411,7 @@ export interface ActivityItem {
   id: string;
   workspaceId: string;
   actorId: string;
-  actorSource: 'user' | 'ai' | 'workflow' | 'integration' | 'system';
+  actorSource: 'user' | 'ai' | 'workflow' | 'integration' | 'system' | 'webhook';
   action: string;
   objectType?: string;
   objectId?: string;

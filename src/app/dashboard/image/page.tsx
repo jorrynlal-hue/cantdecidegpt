@@ -30,8 +30,8 @@ export default function ImageGeneratorPage() {
         body: JSON.stringify({ prompt, style, size }),
       })
       const data = await res.json()
-      setResult(data.image)
-      setHistory((prev) => [{ prompt, image: data.image }, ...prev])
+      setResult(data.data ?? data.image)
+      setHistory((prev) => [{ prompt, image: data.data ?? data.image }, ...prev])
     } catch (err) {
       console.error(err)
     } finally {

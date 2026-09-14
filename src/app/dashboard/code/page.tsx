@@ -74,7 +74,7 @@ export default function CodePage() {
       });
 
       const data = await res.json();
-      setResult(data.code || data.content || data.result || 'No output received.');
+      setResult(data.data ?? data.code ?? data.content ?? data.result ?? 'No output received.');
     } catch {
       setResult('Something went wrong. Please try again.');
     } finally {

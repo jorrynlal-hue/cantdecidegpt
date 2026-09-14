@@ -28,7 +28,7 @@ export default function AnalyzePage() {
         body: JSON.stringify({ text: inputText, type: analysisType }),
       });
       const data = await res.json();
-      setResult(data.result || data.analysis || 'No analysis results.');
+      setResult(data.data ?? data.result ?? data.analysis ?? 'No analysis results.');
     } catch {
       setResult('Failed to analyze text. Please try again.');
     } finally {

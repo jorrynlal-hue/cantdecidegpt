@@ -36,7 +36,7 @@ export default function TranslatePage() {
         body: JSON.stringify({ text: inputText, from: fromLanguage, to: toLanguage }),
       })
       const data = await res.json()
-      setResult(data.translation)
+      setResult(data.data ?? data.translation)
     } catch (err) {
       console.error(err)
     } finally {

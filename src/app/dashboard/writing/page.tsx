@@ -34,7 +34,7 @@ export default function WritingPage() {
         body: JSON.stringify({ prompt, type, tone }),
       });
       const data = await res.json();
-      setResult(data.result || data.content || 'No content generated.');
+      setResult(data.data ?? data.result ?? data.content ?? 'No content generated.');
     } catch {
       setResult('Failed to generate content. Please try again.');
     } finally {
