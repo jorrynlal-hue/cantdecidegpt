@@ -3,9 +3,13 @@
 import { useState } from 'react';
 import { OrbitalKits } from '@/components/projects/OrbitalKits';
 import { getBrand } from '@/lib/theme';
+import { useSession } from '@/components/platform/SessionProvider';
+import { kitTierForPlan } from '@/lib/plans';
 
 export default function ToolkitsPage() {
   const [brand] = useState(() => (typeof window === 'undefined' ? 'CDG' : getBrand()));
+  const { me } = useSession();
+  const tier = kitTierForPlan(me?.plan);
   return (
     <div className="px-4 py-6 lg:px-8">
       <div className="mb-4 flex flex-wrap items-baseline gap-3 border-b border-white/5 pb-3">
@@ -16,7 +20,7 @@ export default function ToolkitsPage() {
           Hover any tool, open it to read what it is, how to use it, and how it helps. A project&apos;s <span className="text-[var(--c-accent-text)]">toolkits</span> section adds tools straight into its flow.
         </p>
       </div>
-      <OrbitalKits which="all" coreLabel={brand} subtitle="System Intelligence Active" />
+      <OrbitalKits which="all" coreLabel={brand} subtitle="System Intelligence Active" tier={tier} />
     </div>
   );
 }

@@ -49,9 +49,12 @@ import {
   Map,
   Orbit,
   FolderKanban,
+  Gem,
+  Crown,
 } from "lucide-react";
 import { ThemeScope } from "@/lib/theme";
 import Preview from "@/components/landing/Preview";
+import { SITE_PLANS } from "@/lib/plans";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 36 },
@@ -1008,6 +1011,80 @@ export default function Landing() {
                   </Reveal>
                 ))}
               </div>
+            </div>
+          </section>
+
+          {/* ============================== PLANS ============================== */}
+          <section id="plans" className="relative px-5 py-20 sm:px-8 sm:py-28">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 rounded-full opacity-10" style={{ background: "linear-gradient(135deg, var(--c-accent), #e883ff)", filter: "blur(150px)" }} />
+            </div>
+            <div className="relative mx-auto max-w-6xl">
+              <SectionHead
+                kicker="Simple, honest pricing"
+                title={<>Every plan unlocks <span className="bg-gradient-to-r from-[var(--c-accent-text)] to-[#e883ff] bg-clip-text text-transparent">a different layer</span> of the system.</>}
+                sub="Start free on the Core base. Unlock the $1,000 premiums when you need them. Go all the way with the $1,600 operator stack."
+              />
+              <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+                {SITE_PLANS.map((plan, i) => (
+                  <Reveal key={plan.id} delay={0.05 * i}>
+                    <div className={`relative flex h-full flex-col rounded-3xl border p-6 ${plan.featured ? "border-[var(--c-accent-border)] bg-white/[0.03]" : "border-white/[0.08] bg-white/[0.02]"}`}>
+                      {plan.featured && (
+                        <span className="absolute -top-3 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[var(--c-glow)]" style={{ background: "linear-gradient(135deg, var(--c-accent), var(--c-accent-strong))" }}>
+                          <Crown className="h-3 w-3" /> Best value
+                        </span>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-black text-white">{plan.name}</h3>
+                        {plan.seats && <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-[var(--muted)]">{plan.seats}</span>}
+                      </div>
+                      {plan.note && <p className="mt-1 text-xs text-[var(--muted)]">{plan.note}</p>}
+                      <p className="mt-4 text-4xl font-black text-white">
+                        ${plan.price.toLocaleString()}
+                        <span className="text-base font-medium text-[var(--muted)]">{plan.cadence}</span>
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--muted)]">{plan.tagline}</p>
+
+                      <p className="mt-6 text-[10px] font-black uppercase tracking-[0.22em] text-emerald-400">What you get</p>
+                      <ul className="mt-3 space-y-2.5">
+                        {plan.features.map((f) => (
+                          <li key={f} className="flex items-start gap-2.5 text-[13px] text-gray-200">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+
+                      {plan.notIncluded.length > 0 && (
+                        <>
+                          <p className="mt-5 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--muted)]">Grows with this plan</p>
+                          <ul className="mt-3 space-y-2">
+                            {plan.notIncluded.map((item) => (
+                              <li key={item} className="flex items-start gap-2.5 text-xs text-[var(--muted)]">
+                                <Gem className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gray-600" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+
+                      <div className="mt-auto pt-7">
+                        <CTA
+                          href={plan.price === 0 ? "/login?mode=signup" : "/dashboard/plans"}
+                          kind={plan.featured ? "primary" : "outline"}
+                          className="w-full"
+                        >
+                          {plan.price === 0 ? "Start free" : plan.cta} <ArrowRight className="h-4 w-4" />
+                        </CTA>
+                      </div>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+              <Reveal delay={0.2} className="mx-auto mt-8 max-w-2xl text-center text-xs text-[var(--muted)]">
+                Every plan is per workspace, paused or changed any time. Financial and contractual actions always wait for your approval — no matter the plan.
+              </Reveal>
             </div>
           </section>
 

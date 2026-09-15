@@ -13,6 +13,8 @@ import {
 import { ALL_TOOLS, RESTORED_TOOLS, ZONE_LABELS, type HubTool, type RestoredTool } from '@/lib/hub';
 import { OrbitalKits } from '@/components/projects/OrbitalKits';
 import { getBrand } from '@/lib/theme';
+import { useSession } from '@/components/platform/SessionProvider';
+import { kitTierForPlan } from '@/lib/plans';
 
 const ICONS: Record<string, LucideIcon> = {
   Waypoints, Gauge, ShieldCheck, KeyRound, Settings, Users, BrainCircuit, Activity, Workflow,
@@ -92,6 +94,8 @@ export function InfiniteSystemMap() {
   const dragRef = useRef<{ sx: number; sy: number; vx: number; vy: number } | null>(null);
   const [hover, setHover] = useState<{ x: number; y: number; name: string; blurb: string; premium?: boolean } | null>(null);
   const [brand] = useState(() => (typeof window === 'undefined' ? 'CDG' : getBrand()));
+  const { me } = useSession();
+  const tier = kitTierForPlan(me?.plan);
 
   useEffect(() => {
     viewRef.current = view;
@@ -360,7 +364,7 @@ export function InfiniteSystemMap() {
                 <Workflow className="h-3 w-3" /> hover a tool — it opens with what it is, how to use it, and how it helps.
               </div>
               <div className="mt-2">
-                <OrbitalKits which={kit.which} coreLabel={brand} subtitle="System Intelligence Active" />
+                <OrbitalKits which={kit.which} coreLabel={brand} subtitle="System Intelligence Active" tier={tier} />
               </div>
             </div>
           ))}

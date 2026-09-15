@@ -13,7 +13,7 @@ import { speak } from '@/lib/voice';
 
 interface Project { id: string; name: string; status: string; }
 
-const PLAN_LIMITS: Record<string, number> = { essential: 3, pro: 5 };
+const PLAN_LIMITS: Record<string, number> = { core: 1, essential: 3, pro: 5 };
 const DEFAULT_BRAND = "CAN'T DECIDE GPT";
 
 const roleTone = (r: string) => (r === 'owner' || r === 'admin' ? 'red' : r === 'manager' ? 'amber' : r === 'member' ? 'blue' : 'gray') as 'red' | 'amber' | 'blue' | 'gray';
@@ -255,8 +255,8 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2">
             <Rocket className="w-4 h-4 text-[var(--c-accent)]" />
             <span className="text-sm font-semibold text-[var(--text-main)] capitalize">{activePlan} workspace</span>
-            <Badge tone={activePlan === 'essential' ? 'amber' : 'purple'}>
-              {activePlan === 'essential' ? 'essential · 3 projects' : 'pro · 5 projects'}
+            <Badge tone={activePlan === 'essential' ? 'amber' : activePlan === 'core' ? 'blue' : 'purple'}>
+              {activePlan === 'essential' ? 'essential · 3 projects' : activePlan === 'core' ? 'core · 1 project' : 'pro · 5 projects'}
             </Badge>
           </div>
           <div className="space-y-1.5">

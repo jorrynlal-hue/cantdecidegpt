@@ -82,9 +82,9 @@ export default function PlansPage() {
       <div>
         <h1 className="text-lg font-bold">Plans & Billing</h1>
         <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
-          Two specials only — the $1,000 Essentials pack and the $1,600 operator stack.
+          Three tiers — start free on the Core base, unlock the $1,000 premiums and the $1,600 operator stack.
           {!loading && data && (
-            <Badge tone={active === 'pro' ? 'purple' : 'green'}>
+            <Badge tone={active === 'pro' ? 'purple' : active === 'essential' ? 'amber' : 'green'}>
               Current: {SITE_PLANS.find((p) => p.id === active)?.name ?? active}
             </Badge>
           )}
@@ -112,7 +112,7 @@ export default function PlansPage() {
       ) : error ? (
         <Empty title="Could not load plans" hint={error} />
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {SITE_PLANS.map((plan: SitePlan) => {
             const isActive = plan.id === active;
             return (
@@ -201,7 +201,7 @@ export default function PlansPage() {
                         {busy === plan.id && payState !== 'paying' ? 'Switching...' : plan.cta}
                       </Btn>
                     )}
-                    {!isActive && (
+                    {!isActive && plan.price > 0 && (
                       <Btn
                         className="w-full"
                         kind="outline"

@@ -187,7 +187,7 @@ export function getProject(db: DB, workspaceId: string, projectId: string): Proj
   return p;
 }
 
-export const PROJECT_PLAN_LIMITS: Record<string, number> = { essential: 3, pro: 5 };
+export const PROJECT_PLAN_LIMITS: Record<string, number> = { core: 1, essential: 3, pro: 5 };
 
 export interface ProjectInput {
   name: string;

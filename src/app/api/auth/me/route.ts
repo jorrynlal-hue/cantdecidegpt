@@ -3,6 +3,7 @@ import { loadDB, hashPassword, uid, persist } from '@/lib/core/db';
 import { ok, fail, fromError, readBody, publicUser } from '@/lib/core/api/helpers';
 import { getSettings, setActiveWorkspace, listWorkspacesForUser, workspaceMembers, ensureAppUser } from '@/lib/core/engine/core';
 import { hydrateGlobalDB, supabaseAuthEnabled, supabaseSignIn, supabaseAdminCreateUser } from '@/lib/core/supabase';
+import { getWorkspacePlan, DEFAULT_PLAN_ID } from '@/lib/plans';
 
 function sessionExpiry(): Date {
   return new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
@@ -25,11 +26,13 @@ export async function GET() {
     if (active && settings?.workspaceId !== active) setActiveWorkspace(db, user.id, active);
     const members = active ? workspaceMembers(db, active) : [];
     const unread = db.notifications.filter((n) => n.workspaceId === active && n.userId === user.id && !n.read).length;
+    const ws = active ? db.workspaces.find((w) => w.id === active) : undefined;
     return ok({
       user: publicUser(user),
       workspaces: workspaces.map((w) => ({ id: w.id, name: w.name, slug: w.slug })),
       activeWorkspaceId: active ?? null,
       settings: settings ?? null,
+      plan: ws ? getWorkspacePlan(ws) : DEFAULT_PLAN_ID,
       unread,
       members: members.map((m) => ({ id: m.id, name: m.name, email: m.email, role: m.role })),
     });
@@ -92,11 +95,13 @@ export async function POST(req: Request) {
     const workspaces = listWorkspacesForUser(db, user.id);
     const settings = getSettings(db, user.id);
     const active = settings?.workspaceId && workspaces.some((w) => w.id === settings.workspaceId) ? settings.workspaceId : workspaces[0]?.id;
+    const ws = active ? db.workspaces.find((w) => w.id === active) : undefined;
     return ok({
       user: publicUser(user),
       workspaces: workspaces.map((w) => ({ id: w.id, name: w.name, slug: w.slug })),
       activeWorkspaceId: active ?? null,
       settings: settings ?? null,
+      plan: ws ? getWorkspacePlan(ws) : DEFAULT_PLAN_ID,
     });
   } catch (e) {
     return fromError(e);

@@ -33,11 +33,13 @@ import {
 } from 'lucide-react';
 import { Badge, Btn, Card, Empty, Spinner } from '@/components/platform/ui';
 import { useCollection } from '@/components/platform/data';
+import { useSession } from '@/components/platform/SessionProvider';
 import { OrbitalKits } from '@/components/projects/OrbitalKits';
 import type { ModuleMeta as OrbitalModuleMeta } from '@/components/projects/OrbitalKits';
 import { ProjectIntake } from '@/components/projects/ProjectIntake';
 import { playTing } from '@/lib/ting';
 import { getBrand } from '@/lib/theme';
+import { kitTierForPlan } from '@/lib/plans';
 
 const DND_MIME = 'application/x-cdgtool';
 
@@ -612,6 +614,8 @@ function FlowCanvas(props: {
 }) {
   const { project, tasks, executions, connected, accent, onBack, onOpenTaskBoard } = props;
   const router = useRouter();
+  const { me } = useSession();
+  const planTier = kitTierForPlan(me?.plan);
   const [coreLabel] = useState(() => (typeof window === 'undefined' ? 'CDG' : getBrand()));
   const [now, setNow] = useState(0);
   useEffect(() => {
@@ -1256,7 +1260,7 @@ function FlowCanvas(props: {
           <span className="ml-auto text-[10px] text-gray-500">hover a tool · click to open it · add it into the flow with one tap</span>
         </div>
         <OrbitalKits
-          tier={project.tier}
+          tier={planTier}
           coreLabel={coreLabel}
           subtitle="System Intelligence Active"
           onAddTool={addOrbitalTool}

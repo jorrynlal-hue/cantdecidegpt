@@ -23,6 +23,7 @@ import { useTheme, getBrand } from '@/lib/theme';
 import { OrbitalKits } from '@/components/projects/OrbitalKits';
 import { SystemMapSection } from '@/components/projects/InfiniteSystemMap';
 import { ProjectIntake } from '@/components/projects/ProjectIntake';
+import { kitTierForPlan } from '@/lib/plans';
 
 interface Project {
   id: string; name: string; description?: string; status: string; ownerId?: string;
@@ -45,7 +46,7 @@ const TIERS = [
 const TEMPLATES = ['Blank project', 'Client delivery', 'E-commerce ops', 'Time-block clarity', 'Approval flow', 'Launch week'];
 const COLOURS = ['#8b5cf6', '#19c9d6', '#ff5a91', '#00d9b2', '#438bff', '#f5b544', '#fb7185', '#a3e635', '#ec4899', '#94a3b8'];
 
-const PLAN_LIMITS: Record<string, number> = { essential: 3, pro: 5 };
+const PLAN_LIMITS: Record<string, number> = { core: 1, essential: 3, pro: 5 };
 
 const TIER_SHORT: Record<string, { label: string; color: string }> = {
   normal: { label: 'R01', color: '#19C9D6' },
@@ -291,7 +292,7 @@ export default function ProjectsOverview() {
 
         {/* plan use tick */}
         <div className="absolute left-10 bottom-6 z-10 flex items-center gap-2 text-[10px] text-gray-600">
-          <span className="uppercase tracking-[0.18em]">{activePlan === 'essential' ? '3' : '5'} max</span>
+          <span className="uppercase tracking-[0.18em]">{limit} max</span>
           <div className="h-1 w-24 overflow-hidden rounded-full bg-white/8">
             <div className="h-full rounded-full" style={{ width: `${Math.min(100, (used / Math.max(1, limit)) * 100)}%`, background: used >= limit ? '#fbbf24' : 'var(--c-accent)' }} />
           </div>
@@ -453,7 +454,7 @@ export default function ProjectsOverview() {
           <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-slate-200">All three radial tool kits in the field</h2>
           <span className="ml-auto text-[10px] text-gray-500">Tier 1 CORE included · $1,000 PREMIUMS · $1,600 PRO PREMIUMS — hover a tool, open it, read what it is and how it helps.</span>
         </div>
-        <OrbitalKits which="all" coreLabel={coreLabel} subtitle="System Intelligence Active" />
+        <OrbitalKits which="all" coreLabel={coreLabel} subtitle="System Intelligence Active" tier={kitTierForPlan(activePlan)} />
       </section>
 
       {/* project intake — accept a full project from the computer into a new or existing project */}

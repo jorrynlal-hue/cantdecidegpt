@@ -134,8 +134,8 @@ export default function DemoPage() {
 
             {/* Plans */}
             <section className="mt-16">
-              <ScreenLabel n="05" title="The two specials — every plan, its own toolkit" />
-              <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <ScreenLabel n="05" title="Three tiers — every plan, its own toolkit" />
+              <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
                 {plans.map((plan) => (
                   <div key={plan.id} className={`rounded-3xl border p-6 ${plan.featured ? 'border-[var(--c-accent-border)]' : 'border-white/10 bg-white/[0.02]'}`}>
                     <div className="flex items-center justify-between">

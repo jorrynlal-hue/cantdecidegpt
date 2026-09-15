@@ -27,6 +27,7 @@ export interface Me {
   workspaces: { id: string; name: string; slug: string }[];
   activeWorkspaceId: string | null;
   settings: { userId: string; workspaceId: string; appearance: { theme: string; accent: string; customAccent?: string }; notify: Record<string, boolean> } | null;
+  plan?: string;
   unread?: number;
   members?: { id: string; name: string; email: string; role: Role }[];
 }

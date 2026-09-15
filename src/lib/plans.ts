@@ -59,7 +59,46 @@ const OPERATOR_TOOLS = [
   "Consultant Button",
 ];
 
+const CORE_TOOLS = [
+  "Business Modules",
+  "Universal AI access",
+  "Performer",
+  "Core integrations",
+];
+
 export const SITE_PLANS: SitePlan[] = [
+  {
+    id: "core",
+    name: "The CORE Base",
+    price: 0,
+    cadence: "/forever",
+    tagline: "The complete business operating system — the full CORE toolkit, dashboard and integrations, included free. Premium and pro tools stay locked until you pick a special.",
+    seats: "1 seat",
+    features: [
+      "The full CORE toolkit — every business module included",
+      "Up to 1 project at a time",
+      "Universal AI access (GPT-4, Claude, Gemini, Groq)",
+      "Performer — describe it, it runs it",
+      "Core dashboard — Home, Tasks, Projects, Tool Board",
+      "Slack, Gmail, Notion, GitHub + core integrations",
+      "Standard security — encrypted sessions, activity logs",
+    ],
+    notIncluded: [
+      "The $1,000 special radial toolkit — 11 premium life tools",
+      "The $1,600 special radial toolkit — 19 pro operator tools",
+      "J Worker (browser + API automations)",
+      "Executive Command Center",
+      "Business Memory & Automation Studio",
+      "Website builder, team seats, custom integrations",
+    ],
+    specials: {
+      label: "$0 CORE — everything included free",
+      lead: "Every business module you need to run the company, ready from the first sign-in.",
+      tools: CORE_TOOLS,
+    },
+    cta: "Start free — CORE included",
+    featured: false,
+  },
   {
     id: "essential",
     name: "The $1,000 Special",
@@ -126,7 +165,13 @@ export const SITE_PLANS: SitePlan[] = [
   },
 ];
 
-export const DEFAULT_PLAN_ID = "pro";
+export const DEFAULT_PLAN_ID = "core";
+
+export function kitTierForPlan(planId?: string): string | undefined {
+  if (planId === 'pro') return '1600';
+  if (planId === 'essential') return '1000';
+  return undefined;
+}
 
 export function findPlan(id: string): SitePlan | undefined {
   return SITE_PLANS.find((p) => p.id === id);

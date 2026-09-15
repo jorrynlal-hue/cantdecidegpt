@@ -14,6 +14,8 @@ import {
 import { ALL_TOOLS, RESTORED_TOOLS, type HubTool, type RestoredTool } from '@/lib/hub';
 import { OrbitalKits } from '@/components/projects/OrbitalKits';
 import { getBrand } from '@/lib/theme';
+import { useSession } from '@/components/platform/SessionProvider';
+import { kitTierForPlan } from '@/lib/plans';
 
 const ICONS: Record<string, LucideIcon> = {
   Waypoints, Gauge, ShieldCheck, KeyRound, Settings, Users, BrainCircuit, Activity, Workflow,
@@ -150,6 +152,8 @@ export function UniverseSpace() {
   const dragRef = useRef<{ sx: number; sy: number; vx: number; vy: number } | null>(null);
   const [hover, setHover] = useState<{ x: number; y: number; name: string; blurb: string; premium?: boolean } | null>(null);
   const [brand] = useState(() => (typeof window === 'undefined' ? 'CDG' : getBrand()));
+  const { me } = useSession();
+  const tier = kitTierForPlan(me?.plan);
 
   useEffect(() => {
     viewRef.current = view;
@@ -501,7 +505,7 @@ export function UniverseSpace() {
               <div className="mb-3 flex items-center gap-2 text-[10px] text-gray-500">
                 <Workflow className="h-3 w-3" /> hover a tool — it opens with what it is, how to use it, and how it helps.
               </div>
-              <OrbitalKits which={kit.which} coreLabel={brand} subtitle="System Intelligence Active" />
+              <OrbitalKits which={kit.which} coreLabel={brand} subtitle="System Intelligence Active" tier={tier} />
             </div>
           ))}
 
