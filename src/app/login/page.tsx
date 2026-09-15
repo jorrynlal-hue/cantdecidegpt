@@ -6,12 +6,6 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { auth } from '@/lib/core/client';
 
-const demoUsers = [
-  { email: 'owner@nexus.local', role: 'Admin' },
-  { email: 'member@nexus.local', role: 'Member' },
-  { email: 'viewer@nexus.local', role: 'Viewer' },
-];
-
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<'signin' | 'signup'>(() => {
@@ -21,8 +15,8 @@ export default function LoginPage() {
     }
     return 'signin';
   });
-  const [email, setEmail] = useState('owner@nexus.local');
-  const [password, setPassword] = useState('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -134,28 +128,6 @@ export default function LoginPage() {
             {busy ? (mode === 'signin' ? 'Signing in...' : 'Creating account...') : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
         </form>
-
-        {mode === 'signin' && (
-        <div className="mt-5 rounded-xl border border-white/5 bg-[#0d0d12] p-4">
-          <p className="text-[11px] uppercase tracking-wider text-gray-600 mb-2">Seed accounts (password: password)</p>
-          <div className="grid gap-1">
-            {demoUsers.map((u) => (
-              <button
-                key={u.email}
-                onClick={() => {
-                  setEmail(u.email);
-                  setPassword('password');
-                  setError(null);
-                }}
-                className="flex items-center justify-between rounded-md px-2 py-1.5 text-xs hover:bg-white/5 text-left"
-              >
-                <span className="text-gray-400">{u.email}</span>
-                <span className="text-purple-300 uppercase text-[10px] tracking-wider">{u.role}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        )}
 
         <Link href="/" className="mt-6 flex items-center justify-center gap-1.5 text-xs text-gray-500 transition-colors hover:text-white">
           <ArrowLeft className="h-3.5 w-3.5" /> Return to CAN&apos;T DECIDE GPT

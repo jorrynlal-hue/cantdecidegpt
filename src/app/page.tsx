@@ -430,13 +430,13 @@ export default function Landing() {
               <SectionHead
                 kicker="Real screens. Real system."
                 title={<>See the dashboard <span className="bg-gradient-to-r from-[var(--c-accent-text)] to-[#e883ff] bg-clip-text text-transparent">actually doing the work.</span></>}
-                sub="No mockups, no still images of a fantasy — these are screenshots of the live system in use: the infinite system map, the project constellation, and all three radial toolkits running real tools."
+                sub="No mockups, no still images of a fantasy — these are screenshots of the live system in use: the home operating space, the project constellation, and the connected channels + AI engine."
               />
               <div className="mt-12 space-y-6">
                 {[
-                  { src: "/shots/system-map.png", t: "The infinite system map", d: "Zoom out over every workflow lane, every zone, every tool and all three radial toolkits — then zoom back in to work." },
+                  { src: "/shots/home-dashboard.png", t: "The whole system — one connected line", d: "Zoom out over the operating space: all 49 tools as one connected line — CORE free, the $1,000 PREMIUMS, then the $1,600 PRO PREMIUMS. Zoom in and open any tool." },
                   { src: "/shots/projects-space.png", t: "The projects space", d: "The floating project constellation and the free space that holds the radial toolkits, briefings and everything moving." },
-                  { src: "/shots/radial-toolkits.png", t: "All three radial tool kits", d: "Tier 1 CORE included, the $1,000 PREMIUMS and the $1,600 PRO PREMIUMS — hover a tool, open it, use it." },
+                  { src: "/shots/connected-space.png", t: "The connected space — channels in, AI out", d: "Your channels and the AI engine as two connected lines — plug in a service, or point a generation kind at a live provider." },
                 ].map((s, i) => (
                   <Reveal key={s.src} delay={i * 0.06}>
                     <div className="overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[#0d0a1c]/80 backdrop-blur-xl">
