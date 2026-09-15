@@ -118,6 +118,7 @@ const NAV = [
   { label: "Projects", href: "#projects" },
   { label: "Trust", href: "#trust" },
   { label: "Reviews", href: "#reviews" },
+  { label: "Pricing", href: "#plans" },
 ];
 
 // ------------------------------------------------------------------ use cases
@@ -364,6 +365,18 @@ export default function Landing() {
                 className="mt-4 text-xs text-[var(--muted)]/80"
               >
                 Connect only what you need — and start with one useful task.
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.36 }}
+                className="mt-3 text-xs text-[var(--muted)]/80"
+              >
+                From $0/mo.{" "}
+                <Link href="#plans" className="font-bold text-[var(--c-accent-text)] underline-offset-4 transition-colors hover:text-white">
+                  See plans & pricing
+                </Link>
               </motion.p>
 
               <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.4 }} className="mx-auto mt-12 max-w-5xl">
@@ -1105,9 +1118,12 @@ export default function Landing() {
                 <br />
                 Let AI help. <span className="bg-gradient-to-r from-[var(--c-accent-text)] to-[#e883ff] bg-clip-text text-transparent">Keep human control.</span>
               </p>
-              <div className="mt-10">
+              <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <CTA href="/login?mode=signup" className="px-12 py-4 text-base">
                   Start now <ArrowRight className="h-5 w-5" />
+                </CTA>
+                <CTA href="#plans" kind="outline" className="px-8 py-4 text-base">
+                  Compare plans & buy
                 </CTA>
               </div>
               <p className="mt-6 text-xs text-[var(--muted)]/80">One useful connection is enough to begin. The rest grows with you.</p>

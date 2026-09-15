@@ -15,6 +15,13 @@ export default function LoginPage() {
     }
     return 'signin';
   });
+  const [next] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const n = new URLSearchParams(window.location.search).get('next');
+      if (n && n.startsWith('/') && !n.startsWith('//') && !n.includes('\\')) return n;
+    }
+    return null;
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -48,7 +55,7 @@ export default function LoginPage() {
       } else {
         await auth.login(email.trim(), password);
       }
-      router.push('/dashboard/onboard');
+      router.push(next ?? '/dashboard/onboard');
       router.refresh();
     } catch (err) {
       setError((err as Error).message);
