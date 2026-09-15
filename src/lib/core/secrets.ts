@@ -8,24 +8,52 @@ import path from 'node:path';
 const DATA_DIR = path.join(process.cwd(), '.data');
 const FILE = path.join(DATA_DIR, 'secrets.json');
 
-export interface OpenAISecrets {
+export type ProviderName = 'openai' | 'anthropic' | 'google' | 'groq' | 'mistral';
+
+export const PROVIDER_NAMES: ProviderName[] = ['openai', 'anthropic', 'google', 'groq', 'mistral'];
+
+export interface ProviderSecrets {
   apiKey?: string;
   baseUrl?: string;
   model?: string;
 }
 
 export interface Secrets {
-  openai: OpenAISecrets;
+  openai: ProviderSecrets;
+  anthropic: ProviderSecrets;
+  google: ProviderSecrets;
+  groq: ProviderSecrets;
+  mistral: ProviderSecrets;
 }
+
+export type OpenAISecrets = ProviderSecrets;
+
+const EMPTY: Secrets = {
+  openai: {},
+  anthropic: {},
+  google: {},
+  groq: {},
+  mistral: {},
+};
+
+const ENV_KEYS: Record<ProviderName, { key: string; base: string; model: string }> = {
+  openai: { key: 'OPENAI_API_KEY', base: 'OPENAI_BASE_URL', model: 'OPENAI_MODEL' },
+  anthropic: { key: 'ANTHROPIC_API_KEY', base: 'ANTHROPIC_BASE_URL', model: 'ANTHROPIC_MODEL' },
+  google: { key: 'GOOGLE_API_KEY', base: 'GOOGLE_BASE_URL', model: 'GOOGLE_MODEL' },
+  groq: { key: 'GROQ_API_KEY', base: 'GROQ_BASE_URL', model: 'GROQ_MODEL' },
+  mistral: { key: 'MISTRAL_API_KEY', base: 'MISTRAL_BASE_URL', model: 'MISTRAL_MODEL' },
+};
 
 function readFile(): Secrets {
   try {
-    if (!fs.existsSync(FILE)) return { openai: {} };
+    if (!fs.existsSync(FILE)) return { ...EMPTY };
     const raw = fs.readFileSync(FILE, 'utf8');
     const parsed = JSON.parse(raw) as Partial<Secrets>;
-    return { openai: { ...(parsed.openai ?? {}) } };
+    const out = { ...EMPTY };
+    for (const p of PROVIDER_NAMES) out[p] = { ...(parsed[p] ?? {}) };
+    return out;
   } catch {
-    return { openai: {} };
+    return { ...EMPTY };
   }
 }
 
@@ -36,26 +64,42 @@ function writeFile(s: Secrets): void {
   fs.renameSync(tmp, FILE);
 }
 
-export function getOpenAI(): OpenAISecrets {
-  // env vars are canonical; stored file supplements (and can override) them
-  const s = readFile().openai;
+export function isProviderName(v: unknown): v is ProviderName {
+  return PROVIDER_NAMES.includes(v as ProviderName);
+}
+
+export function getProviderSecrets(provider: ProviderName): ProviderSecrets {
+  const env = ENV_KEYS[provider];
+  const s = readFile()[provider];
   return {
-    apiKey: s.apiKey || process.env.OPENAI_API_KEY || undefined,
-    baseUrl: s.baseUrl || process.env.OPENAI_BASE_URL || undefined,
-    model: s.model || process.env.OPENAI_MODEL || undefined,
+    apiKey: s.apiKey || process.env[env.key] || undefined,
+    baseUrl: s.baseUrl || process.env[env.base] || undefined,
+    model: s.model || process.env[env.model] || undefined,
   };
 }
 
-export function setOpenAI(input: OpenAISecrets): void {
+export function setProviderSecrets(provider: ProviderName, input: ProviderSecrets): void {
   const s = readFile();
-  s.openai = { ...s.openai, ...input };
+  s[provider] = { ...s[provider], ...input };
   writeFile(s);
 }
 
-export function clearOpenAI(): void {
+export function clearProviderSecrets(provider: ProviderName): void {
   const s = readFile();
-  s.openai = {};
+  s[provider] = {};
   writeFile(s);
+}
+
+export function getOpenAI(): ProviderSecrets {
+  return getProviderSecrets('openai');
+}
+
+export function setOpenAI(input: ProviderSecrets): void {
+  setProviderSecrets('openai', input);
+}
+
+export function clearOpenAI(): void {
+  clearProviderSecrets('openai');
 }
 
 export function maskKey(key: string): string {

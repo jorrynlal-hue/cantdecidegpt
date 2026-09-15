@@ -1,18 +1,28 @@
 import { requireSession, ok, fail, fromError, readBody } from '@/lib/core/api/helpers';
-import { listLiveStatus } from '@/lib/core/providers';
-import { getOpenAI, setOpenAI, clearOpenAI, maskKey } from '@/lib/core/secrets';
+import { listLiveStatus, providerNameLabel } from '@/lib/core/providers';
+import { getProviderSecrets, setProviderSecrets, clearProviderSecrets, maskKey, isProviderName, PROVIDER_NAMES, type ProviderName } from '@/lib/core/secrets';
 import { requireRole } from '@/lib/core/engine/core';
-import { validateOpenAIKey } from '@/lib/core/ai';
+import { validateProviderKey } from '@/lib/core/router';
+
+function providerStatus(p: ProviderName) {
+  const s = getProviderSecrets(p);
+  return {
+    provider: p,
+    label: providerNameLabel(p),
+    hasKey: !!s.apiKey,
+    maskedKey: s.apiKey ? maskKey(s.apiKey) : '',
+    baseUrl: s.baseUrl ?? '',
+    model: s.model ?? '',
+  };
+}
 
 export async function GET() {
   try {
     const { db, ctx } = await requireSession();
-    const secrets = getOpenAI();
+    const providers = PROVIDER_NAMES.map(providerStatus);
     return ok({
-      hasKey: !!secrets.apiKey,
-      maskedKey: secrets.apiKey ? maskKey(secrets.apiKey) : '',
-      baseUrl: secrets.baseUrl ?? '',
-      model: secrets.model ?? '',
+      providers,
+      hasAnyKey: providers.some((p) => p.hasKey),
       kinds: listLiveStatus(db, ctx.workspaceId),
     });
   } catch (e) {
@@ -25,27 +35,24 @@ export async function POST(req: Request) {
     const { db, ctx } = await requireSession();
     requireRole(ctx, 'manager');
     const body = await readBody(req);
+    const provider: ProviderName = isProviderName(body.provider) ? body.provider : 'openai';
     const apiKey = body.apiKey ? String(body.apiKey).trim() : undefined;
     const baseUrl = body.baseUrl ? String(body.baseUrl).trim() : undefined;
     const model = body.model ? String(body.model).trim() : undefined;
     if (apiKey) {
-      const okLive = await validateOpenAIKey(apiKey, baseUrl ?? getOpenAI().baseUrl);
-      if (!okLive) return fail('INVALID_KEY', 'The API key could not be validated against the given base URL.');
+      const live = await validateProviderKey(provider, apiKey, baseUrl ?? getProviderSecrets(provider).baseUrl);
+      if (!live) return fail('INVALID_KEY', 'The API key could not be validated against the given base URL.');
     }
     if (apiKey || baseUrl || model) {
-      setOpenAI({
+      setProviderSecrets(provider, {
         apiKey: apiKey ?? undefined,
         baseUrl: baseUrl ?? undefined,
         model: model ?? undefined,
       });
     }
-    const secrets = getOpenAI();
-    void db;
     return ok({
-      hasKey: !!secrets.apiKey,
-      maskedKey: secrets.apiKey ? maskKey(secrets.apiKey) : '',
-      baseUrl: secrets.baseUrl ?? '',
-      model: secrets.model ?? '',
+      providers: PROVIDER_NAMES.map(providerStatus),
+      hasAnyKey: PROVIDER_NAMES.some((p) => !!getProviderSecrets(p).apiKey),
       kinds: listLiveStatus(db, ctx.workspaceId),
     });
   } catch (e) {
@@ -53,12 +60,14 @@ export async function POST(req: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
   try {
     const { db, ctx } = await requireSession();
     requireRole(ctx, 'manager');
-    clearOpenAI();
-    return ok({ cleared: true, kinds: listLiveStatus(db, ctx.workspaceId) });
+    const body = await readBody(req);
+    const provider: ProviderName = isProviderName(body.provider) ? body.provider : 'openai';
+    clearProviderSecrets(provider);
+    return ok({ cleared: provider, providers: PROVIDER_NAMES.map(providerStatus), hasAnyKey: PROVIDER_NAMES.some((p) => !!getProviderSecrets(p).apiKey), kinds: listLiveStatus(db, ctx.workspaceId) });
   } catch (e) {
     return fromError(e);
   }

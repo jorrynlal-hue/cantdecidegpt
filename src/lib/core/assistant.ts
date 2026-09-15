@@ -6,6 +6,7 @@ import { runProviderLive } from './providers';
 import { searchDocuments } from './engine/docs';
 import { computeInsights } from './analytics';
 import { globalSearch } from './search';
+import { runAgent } from './agent';
 import { AppError } from './error';
 
 export interface AssistantReply {
@@ -122,8 +123,8 @@ async function decideAndReply(ctx: Ctx, db: DB, text: string): Promise<{ reply: 
     };
   }
 
-  // default chat through the configured provider (live or honest baseline)
-  const out = await runProviderLive(db, ctx.workspaceId, 'chat', t);
-  const tail = `\\n\\n(I can act too — type "help" to see the tools I can run on your data.)`;
-  return { reply: out.output + tail };
+  // default: run the agent loop (plan → real tools → verify) or honest baseline
+  const agent = await runAgent(ctx, db, t);
+  const firstAction = agent.steps.find((s) => s.kind === 'action');
+  return { reply: agent.reply, toolUsed: firstAction?.action ?? (agent.provider === 'baseline' ? undefined : 'agent') };
 }

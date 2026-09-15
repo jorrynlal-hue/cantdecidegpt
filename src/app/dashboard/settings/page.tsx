@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Palette, User as UserIcon, LogOut, KeyRound, Trash2, Volume2, BellRing, Moon, Mic, Rocket, RotateCcw, Sparkles } from 'lucide-react';
 import { Card, CardHeader, Badge, Btn, Input, Field, Spinner } from '@/components/platform/ui';
@@ -20,6 +20,22 @@ const roleTone = (r: string) => (r === 'owner' || r === 'admin' ? 'red' : r === 
 
 interface ProvStatus { kind: string; provider: string; usesBaseline: boolean; keyConfigured: boolean; model: string; }
 
+interface ProvState { provider: string; label: string; hasKey: boolean; maskedKey: string; baseUrl: string; model: string; }
+
+interface AiStatus { hasAnyKey: boolean; kinds?: ProvStatus[]; }
+
+const PROV_PLACEHOLDERS: Record<string, { base: string; model: string; note: string }> = {
+  openai: { base: 'https://api.openai.com/v1', model: 'gpt-4o-mini', note: 'Works with api.openai.com or any OpenAI-compatible gateway.' },
+  anthropic: { base: 'https://api.anthropic.com', model: 'claude-3-5-sonnet-latest', note: 'Anthropic Messages API. Best-in-class reasoning.' },
+  google: { base: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-1.5-pro', note: 'Google Gemini API via an API key.' },
+  groq: { base: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', note: 'Fast inference, OpenAI-compatible endpoints.' },
+  mistral: { base: 'https://api.mistral.ai/v1', model: 'mistral-large-latest', note: 'Mistral Large, OpenAI-compatible endpoints.' },
+};
+
+const PROV_SHORT: Record<string, string> = {
+  openai: 'OpenAI', anthropic: 'Anthropic', google: 'Gemini', groq: 'Groq', mistral: 'Mistral', baseline: 'baseline',
+};
+
 export default function SettingsPage() {
   const { me, logout } = useSession();
   const [busy, setBusy] = useState(false);
@@ -29,7 +45,9 @@ export default function SettingsPage() {
   const projects = useCollection<Project>('projects', {});
   const [activePlan, setActivePlan] = useState('pro');
 
-  const [st, setSt] = useState<{ hasKey: boolean; maskedKey: string; baseUrl: string; model: string; kinds: ProvStatus[] } | null>(null);
+  const [ai, setAi] = useState<AiStatus | null>(null);
+  const [provs, setProvs] = useState<ProvState[]>([]);
+  const [sel, setSel] = useState('openai');
   const [key, setKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [model, setModel] = useState('');
@@ -63,11 +81,30 @@ export default function SettingsPage() {
     } catch { /* denied or blocked */ }
   };
 
+  const applyAiData = useCallback((d: { providers?: ProvState[]; hasAnyKey?: boolean; kinds?: ProvStatus[] }) => {
+    const list = d.providers ?? [];
+    setProvs(list);
+    setAi({ hasAnyKey: !!d.hasAnyKey, kinds: d.kinds });
+    const want = list.find((p) => p.provider === sel)?.provider ?? list[0]?.provider ?? 'openai';
+    const cur = list.find((p) => p.provider === want) ?? list[0];
+    if (cur) {
+      setSel(cur.provider);
+      setBaseUrl(cur.baseUrl ?? '');
+      setModel(cur.model ?? '');
+    }
+  }, [sel]);
+
+  const selectProvider = (p: ProvState) => {
+    setSel(p.provider);
+    setBaseUrl(p.baseUrl ?? '');
+    setModel(p.model ?? '');
+  };
+
   useEffect(() => {
     fetch('/api/providers').then((r) => r.json()).then((d) => {
-      if (d.ok) { setSt(d.data); setBaseUrl(d.data.baseUrl ?? ''); setModel(d.data.model ?? ''); }
+      if (d.ok) applyAiData(d.data);
     }).catch(() => {});
-  }, []);
+  }, [applyAiData]);
 
   useEffect(() => {
     plans.list().then((r) => setActivePlan(r.active)).catch(() => {});
@@ -78,11 +115,11 @@ export default function SettingsPage() {
     try {
       const res = await fetch('/api/providers', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: key || undefined, baseUrl: baseUrl || undefined, model: model || undefined }),
+        body: JSON.stringify({ provider: sel, apiKey: key || undefined, baseUrl: baseUrl || undefined, model: model || undefined }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d?.error ?? 'Save failed');
-      setSt(d.data);
+      applyAiData(d.data);
       setKey('');
     } catch (e) {
       alert((e as Error).message);
@@ -92,13 +129,14 @@ export default function SettingsPage() {
   };
 
   const clearAI = async () => {
-    if (!confirm('Remove the stored AI provider key?')) return;
+    const label = provs.find((p) => p.provider === sel)?.label ?? sel;
+    if (!confirm(`Remove the stored ${label} API key?`)) return;
     setAiBusy(true);
     try {
-      const res = await fetch('/api/providers', { method: 'DELETE' });
+      const res = await fetch('/api/providers', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: sel }) });
       const d = await res.json();
       if (!res.ok) throw new Error(d?.error ?? 'Clear failed');
-      setSt(d.data);
+      applyAiData(d.data);
     } catch (e) {
       alert((e as Error).message);
     } finally {
@@ -369,41 +407,59 @@ export default function SettingsPage() {
       </Card>
 
       <Card>
-        <CardHeader title="AI provider" sub="Real generation when a key is set; otherwise the honest baseline simulator is used." />
+        <CardHeader title="AI providers" sub="Real generation when a key is set; otherwise the honest baseline simulator is used. When multiple providers are configured, the strongest available one is used with automatic fallback." />
         <div className="p-4 space-y-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-wider text-[var(--muted)] font-semibold">Provider</p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {provs.map((p) => {
+                const on = sel === p.provider;
+                return (
+                  <button
+                    key={p.provider}
+                    onClick={() => selectProvider(p)}
+                    className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 transition-all ${on ? 'border-[var(--c-accent)]/60 bg-white/[0.04]' : 'border-white/10 hover:border-white/25'}`}
+                  >
+                    <span className="text-xs font-semibold text-[var(--text-main)]">{p.label}</span>
+                    <Badge tone={p.hasKey ? 'green' : 'gray'}>{p.hasKey ? `live · ${p.maskedKey}` : 'no key'}</Badge>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
             <KeyRound className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-300">Engine</span>
-            {st?.hasKey ? <Badge tone="green">live ({st.maskedKey})</Badge> : <Badge tone="gray">baseline simulator</Badge>}
-            {st?.baseUrl ? <span className="text-[10px] text-gray-600">{st.baseUrl}</span> : null}
+            <span className="text-sm text-gray-300">{provs.find((p) => p.provider === sel)?.label ?? 'Provider'}</span>
+            {ai?.hasAnyKey ? <Badge tone="green">live</Badge> : <Badge tone="gray">baseline simulator</Badge>}
           </div>
 
           <div className="grid gap-2 sm:grid-cols-2">
-            {st?.kinds.map((k) => (
+            {(ai?.kinds ?? []).map((k) => (
               <div key={k.kind} className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-2">
                 <span className="text-xs text-gray-300 capitalize">{k.kind}</span>
-                <Badge tone={!k.usesBaseline ? 'green' : 'gray'}>{!k.usesBaseline ? `${k.provider} · live` : 'baseline'}</Badge>
+                <Badge tone={!k.usesBaseline ? 'green' : 'gray'}>{!k.usesBaseline ? `${PROV_SHORT[k.provider] ?? k.provider} · live` : 'baseline'}</Badge>
               </div>
             ))}
           </div>
 
           <div className="space-y-3">
-            <Field label="OpenAI-compatible API key (stored server-side, never shown again)">
-              <Input type="password" value={key} onChange={(v) => setKey(v)} placeholder={st?.hasKey ? '•••••••• (existing key — leave blank to keep)' : 'sk-...'} />
+            <Field label={`${provs.find((p) => p.provider === sel)?.label ?? 'Selected provider'} API key (stored server-side, never shown again)`}>
+              <Input type="password" value={key} onChange={(v) => setKey(v)} placeholder={provs.find((p) => p.provider === sel)?.hasKey ? '•••••••• (existing key — leave blank to keep)' : 'sk-...'} />
             </Field>
             <Field label="Base URL">
-              <Input value={baseUrl} onChange={(v) => setBaseUrl(v)} placeholder="https://api.openai.com/v1" />
+              <Input value={baseUrl} onChange={(v) => setBaseUrl(v)} placeholder={PROV_PLACEHOLDERS[sel]?.base ?? 'https://api.openai.com/v1'} />
             </Field>
             <Field label="Model">
-              <Input value={model} onChange={(v) => setModel(v)} placeholder="gpt-4o-mini (or per-kind defaults)" />
+              <Input value={model} onChange={(v) => setModel(v)} placeholder={PROV_PLACEHOLDERS[sel]?.model ?? 'model'} />
             </Field>
             <div className="flex items-center gap-2">
-              <Btn onClick={saveAI} disabled={aiBusy}>{aiBusy ? <Spinner /> : 'Save AI provider'}</Btn>
-              {st?.hasKey ? (
+              <Btn onClick={saveAI} disabled={aiBusy}>{aiBusy ? <Spinner /> : 'Save provider'}</Btn>
+              {provs.find((p) => p.provider === sel)?.hasKey ? (
                 <Btn kind="danger" small onClick={clearAI} disabled={aiBusy}><Trash2 className="w-3 h-3" /> Remove key</Btn>
               ) : null}
             </div>
-            <p className="text-[10px] text-gray-600">Works with api.openai.com or any OpenAI-compatible gateway. Keys are validated, stored in the ignored <span className="font-mono">.data/</span> folder, and never returned to the browser.</p>
+            <p className="text-[10px] text-gray-600">{PROV_PLACEHOLDERS[sel]?.note ?? ''} Keys are validated, stored in the ignored <span className="font-mono">.data/</span> folder, and never returned to the browser. Text generation falls back across providers automatically.</p>
           </div>
         </div>
       </Card>

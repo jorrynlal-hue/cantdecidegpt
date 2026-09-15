@@ -1,16 +1,18 @@
-import { getOpenAI } from './secrets';
+import { getProviderSecrets, isProviderName } from './secrets';
 import type { ProviderConfig } from './types';
+import { routeText, isTextKind, configuredTextProviders, providerBaseUrl, providerModel, type ProviderName } from './router';
 
 type ProviderKind = ProviderConfig['kind'];
 
-// Live AI transport. Speaks OpenAI-compatible REST (works against api.openai.com
-// or any compatible gateway such as Ollama, LM Studio, Groq, etc. via base URL).
-// Every call is real: no fabricated output. Callers decide whether/how to label
+// Live AI transport. Text generation routes through a multi-provider router
+// (OpenAI, Anthropic, Google, Groq, Mistral) with an automatic fallback chain.
+// Image / speech / transcription stay on OpenAI-compatible endpoints. Every
+// call is real: no fabricated output. Callers decide whether/how to label
 // results; if a real provider is not available they fall back to the honest
 // baseline simulator, never to a fake "it worked".
 
 export interface LiveModel {
-  provider: 'openai';
+  provider: ProviderName;
   kind: ProviderKind;
   apiKey: string;
   baseUrl: string;
@@ -20,9 +22,6 @@ export interface LiveModel {
 const DEFAULT_BASE = 'https://api.openai.com/v1';
 
 const DEFAULT_MODELS: Record<string, string> = {
-  chat: 'gpt-4o-mini',
-  content: 'gpt-4o-mini',
-  code: 'gpt-4o-mini',
   image: 'dall-e-3',
   speech: 'tts-1',
   transcription: 'whisper-1',
@@ -32,14 +31,30 @@ export function defaultModelFor(kind: ProviderKind): string {
   return DEFAULT_MODELS[kind] ?? 'gpt-4o-mini';
 }
 
-// A live spec is available when an API key exists. Which live provider is used
-// follows the explicit providerConfig (openai) if set, else defaults to openai.
+// A live spec is available when a key exists for the relevant provider. Text
+// kinds follow the explicit providerConfig (any supported provider) if set,
+// else the strongest configured provider. Non-text kinds stay on OpenAI.
 export function liveModelFor(kind: ProviderKind, cfgProvider?: string, cfgEnabled?: boolean): LiveModel | null {
-  const secrets = getOpenAI();
+  if (cfgEnabled === false) return null;
+  if (kind === 'video') return null;
+  if (isTextKind(kind)) {
+    const configured = configuredTextProviders();
+    if (!configured.length) return null;
+    const preferred = (cfgProvider && isProviderName(cfgProvider) && getProviderSecrets(cfgProvider).apiKey
+      ? cfgProvider
+      : configured[0]) as ProviderName;
+    const secrets = getProviderSecrets(preferred);
+    return {
+      provider: preferred,
+      kind,
+      apiKey: secrets.apiKey || '',
+      baseUrl: providerBaseUrl(preferred),
+      model: providerModel(preferred, kind),
+    };
+  }
+  const secrets = getProviderSecrets('openai');
   if (!secrets.apiKey) return null;
   if (cfgProvider !== undefined && cfgProvider !== 'baseline' && cfgProvider !== 'openai') return null;
-  if (cfgEnabled === false) return null;
-  if (kind === 'video') return null; // no production video generation here
   return {
     provider: 'openai',
     kind,
@@ -73,16 +88,29 @@ async function chatCompletion(lm: LiveModel, messages: { role: string; content: 
 export async function liveChat(messages: { role: string; content: string }[]): Promise<string> {
   const lm = liveModelFor('chat');
   if (!lm) throw new Error('NO_LIVE_PROVIDER');
-  return chatCompletion(lm, messages);
+  const system = (messages.find((m) => m.role === 'system')?.content ?? '').trim();
+  const prompt = messages.filter((m) => m.role !== 'system').map((m) => m.content).join('\n\n').trim();
+  if (!prompt) throw new Error('EMPTY_PROMPT');
+  const out = await routeText('chat', system, prompt, { provider: lm.provider, model: lm.model });
+  return out.text;
 }
 
 export async function liveComplete(kind: ProviderKind, system: string, prompt: string, params: Record<string, unknown> = {}): Promise<string> {
+  const temperature = typeof params.temperature === 'number' ? params.temperature : 0.7;
+  if (isTextKind(kind)) {
+    const suggested = String(params.provider ?? '');
+    const provider = isProviderName(suggested) ? suggested : undefined;
+    const model = params.model && typeof params.model === 'string' ? params.model : undefined;
+    const maxTokens = typeof params.maxTokens === 'number' ? params.maxTokens : undefined;
+    const out = await routeText(kind, system, prompt, { provider, model, temperature, maxTokens });
+    return out.text;
+  }
   const lm = liveModelFor(kind, String(params.provider ?? 'openai'), params.enabled !== false);
   if (!lm) throw new Error('NO_LIVE_PROVIDER');
   return chatCompletion(lm, [
     { role: 'system', content: system },
     { role: 'user', content: prompt },
-  ], typeof params.temperature === 'number' ? params.temperature : 0.7);
+  ], temperature);
 }
 
 export async function liveImage(prompt: string, params: Record<string, unknown> = {}): Promise<string> {

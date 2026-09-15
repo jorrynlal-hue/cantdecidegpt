@@ -1,7 +1,8 @@
 import { DB, ProviderConfig } from './types';
 import { now } from './db';
 import { liveModelFor, liveComplete, liveImage, liveSpeech, liveTranscribe, defaultModelFor } from './ai';
-import { getOpenAI } from './secrets';
+import { getOpenAI, getProviderSecrets, isProviderName } from './secrets';
+import { configuredTextProviders, isTextKind } from './router';
 
 // Provider abstraction. Every AI/generation/communication capability is routed
 // through a ProviderConfig. The built-in "baseline" provider is a clearly-labeled
@@ -49,19 +50,34 @@ export function listProviderConfigs(db: DB, workspaceId: string): ProviderConfig
   return db.providerConfigs.filter((p) => p.workspaceId === workspaceId);
 }
 
+export function providerNameLabel(provider: string): string {
+  const map: Record<string, string> = {
+    baseline: 'Baseline (built-in simulator)',
+    openai: 'OpenAI',
+    anthropic: 'Anthropic',
+    google: 'Google Gemini',
+    groq: 'Groq',
+    mistral: 'Mistral',
+  };
+  return map[provider] ?? provider;
+}
+
 export function providerInfo(cfg: ProviderConfig | undefined, kind: ProviderKind): ProviderInfo {
   if (!cfg) {
     return { kind, id: `prv-${kind}`, provider: BASELINE, isBaseline: true, enabled: true, label: providerKindLabel(kind) + ' (baseline simulator)', status: 'ready' };
   }
   const isBaseline = cfg.provider === BASELINE;
+  const keyReady = isProviderName(cfg.provider) ? !!getProviderSecrets(cfg.provider).apiKey : false;
   return {
     kind,
     id: cfg.id,
     provider: cfg.provider,
     isBaseline,
     enabled: cfg.enabled,
-    label: isBaseline ? `${providerKindLabel(kind)} (baseline simulator)` : `${providerKindLabel(kind)} via ${cfg.provider} (simulated — no secrets stored)`,
-    status: !cfg.enabled ? 'disabled' : isBaseline ? 'ready' : 'needs_setup',
+    label: isBaseline
+      ? `${providerKindLabel(kind)} (baseline simulator)`
+      : `${providerKindLabel(kind)} via ${providerNameLabel(cfg.provider)}${keyReady ? '' : ' — add API key'}`,
+    status: !cfg.enabled ? 'disabled' : isBaseline ? 'ready' : keyReady ? 'ready' : 'needs_setup',
   };
 }
 
@@ -157,18 +173,30 @@ export interface LiveStatus {
 }
 
 export function listLiveStatus(db: DB, workspaceId: string): LiveStatus[] {
-  const hasKey = !!getOpenAI().apiKey;
+  const textProviders = configuredTextProviders();
+  const hasTextKey = textProviders.length > 0;
+  const hasOpenAIKey = !!getOpenAI().apiKey;
   return listProviderKinds().map((kind) => {
     const cfg = getProviderConfig(db, workspaceId, kind);
     const explicit = cfg && cfg.provider !== BASELINE;
-    const provider = explicit ? cfg!.provider : 'openai';
-    const specPossible = liveModelFor(kind, explicit ? provider : 'openai', explicit ? cfg!.enabled : true);
+    const textKind = isTextKind(kind);
+    const provider = explicit && isProviderName(cfg!.provider)
+      ? cfg!.provider
+      : textKind
+        ? (hasTextKey ? textProviders[0] : 'openai')
+        : 'openai';
+    const cfgLookup = explicit && isProviderName(cfg!.provider)
+      ? cfg!.provider
+      : textKind && hasTextKey
+        ? textProviders[0]
+        : 'openai';
+    const specPossible = liveModelFor(kind, textKind ? (hasTextKey ? cfgLookup : 'openai') : cfgLookup, explicit ? cfg!.enabled : true);
     return {
       kind,
       configured: !!cfg,
       provider,
       usesBaseline: !specPossible,
-      keyConfigured: hasKey,
+      keyConfigured: textKind ? hasTextKey : hasOpenAIKey,
       model: specPossible?.model ?? defaultModelFor(kind),
     };
   });
